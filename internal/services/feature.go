@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/euforicio/spec-kit/internal/codex"
 	"github.com/euforicio/spec-kit/internal/models"
 )
 
@@ -35,6 +36,7 @@ var languageCommands = map[string]string{
 type FeatureService struct {
 	filesystem FilesystemServiceInterface
 	git        GitServiceInterface
+	codex      *codex.Service
 }
 
 type FeatureServiceInterface interface {
@@ -50,6 +52,7 @@ func NewFeatureService(filesystem FilesystemServiceInterface, git GitServiceInte
 	return &FeatureService{
 		filesystem: filesystem,
 		git:        git,
+		codex:      codex.NewService(),
 	}
 }
 
@@ -265,6 +268,7 @@ func (f *FeatureService) UpdateContext(agentType string) (*models.FeatureContext
 			"claude":  filepath.Join(repoRoot, "CLAUDE.md"),
 			"gemini":  filepath.Join(repoRoot, "GEMINI.md"),
 			"copilot": filepath.Join(repoRoot, ".github", "copilot-instructions.md"),
+			"codex":   filepath.Join(repoRoot, "AGENTS.md"),
 		}
 
 		for agent, file := range agentFiles {
@@ -294,6 +298,8 @@ func (f *FeatureService) UpdateContext(agentType string) (*models.FeatureContext
 			file = filepath.Join(repoRoot, "GEMINI.md")
 		case "copilot":
 			file = filepath.Join(repoRoot, ".github", "copilot-instructions.md")
+		case "codex":
+			file = filepath.Join(repoRoot, "AGENTS.md")
 		}
 
 		if err := f.updateAgentFile(file, agentType, techInfo, currentBranch); err != nil {
@@ -466,6 +472,11 @@ func (f *FeatureService) extractTechInfo(content string) TechInfo {
 }
 
 func (f *FeatureService) updateAgentFile(filePath, agentType string, techInfo TechInfo, currentBranch string) error {
+	// Handle codex special case
+	if agentType == "codex" {
+		return f.updateCodexAgent(filePath, techInfo, currentBranch)
+	}
+
 	exists, err := f.filesystem.FileExists(filePath)
 	if err != nil {
 		return fmt.Errorf("failed to check file existence: %w", err)
@@ -595,6 +606,8 @@ func (f *FeatureService) getAgentDisplayName(agentType string) string {
 		return "Gemini CLI"
 	case "copilot":
 		return "GitHub Copilot"
+	case "codex":
+		return "OpenAI Codex"
 	default:
 		return agentType
 	}
@@ -634,4 +647,47 @@ Last updated: [DATE]
 ## Recent Changes
 [LAST 3 FEATURES AND WHAT THEY ADDED]
 `
+}
+
+func (f *FeatureService) updateCodexAgent(filePath string, techInfo TechInfo, currentBranch string) error {
+	repoRoot, err := f.git.GetRepoRoot()
+	if err != nil {
+		return fmt.Errorf("failed to get repository root: %w", err)
+	}
+
+	featureDir := filepath.Join(repoRoot, "specs", currentBranch)
+	planFile := filepath.Join(featureDir, "plan.md")
+
+	// Read plan content
+	planContent, err := f.filesystem.ReadFile(planFile)
+	if err != nil {
+		return fmt.Errorf("failed to read plan file: %w", err)
+	}
+
+	// Read existing AGENTS.md if it exists
+	var existingContent []byte
+	if exists, _ := f.filesystem.FileExists(filePath); exists {
+		existingContent, err = f.filesystem.ReadFileBytes(filePath)
+		if err != nil {
+			return fmt.Errorf("failed to read existing AGENTS.md: %w", err)
+		}
+	}
+
+	// Generate AGENTS.md content
+	agentsContent, err := f.codex.GenerateAGENTS(planContent, existingContent)
+	if err != nil {
+		return fmt.Errorf("failed to generate AGENTS.md: %w", err)
+	}
+
+	// Write AGENTS.md
+	if err := f.codex.WriteAGENTS(agentsContent, repoRoot); err != nil {
+		return fmt.Errorf("failed to write AGENTS.md: %w", err)
+	}
+
+	// Create command files
+	if err := f.codex.WriteCommandFiles(false, repoRoot); err != nil {
+		return fmt.Errorf("failed to write command files: %w", err)
+	}
+
+	return nil
 }

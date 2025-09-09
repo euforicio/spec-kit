@@ -19,6 +19,7 @@ type FilesystemServiceInterface interface {
 	CreateDirectory(path string) error
 	WriteFile(path, content string) error
 	ReadFile(path string) (string, error)
+	ReadFileBytes(path string) ([]byte, error)
 	FileExists(path string) (bool, error)
 	DownloadFile(url, destination string) error
 	ExtractZip(src, dest string) error
@@ -280,6 +281,15 @@ func (fs *FilesystemService) ReadFile(path string) (string, error) {
 		return "", fmt.Errorf("failed to read file: %w", err)
 	}
 	return string(data), nil
+}
+
+// ReadFileBytes reads a file and returns its content as bytes
+func (fs *FilesystemService) ReadFileBytes(path string) ([]byte, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read file: %w", err)
+	}
+	return data, nil
 }
 
 // GetWorkingDirectory returns the current working directory

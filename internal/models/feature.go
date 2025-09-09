@@ -1,7 +1,7 @@
 package models
 
 // ValidAgentTypes are the supported AI agent types
-var ValidAgentTypes = []string{"claude", "gemini", "copilot"}
+var ValidAgentTypes = []string{"claude", "gemini", "copilot", "codex"}
 
 // FeatureCreateResult represents the result of creating a new feature
 type FeatureCreateResult struct {
