@@ -1,6 +1,6 @@
 ## Contributing to Spec Kit
 
-Hi there! We're thrilled that you'd like to contribute to Spec Kit. Contributions to this project are [released](https://help.github.com/articles/github-terms-of-service/#6-contributions-under-repository-license) to the public under the [project's open source license](LICENSE).
+Hi there! We're thrilled that you'd like to contribute to Spec Kit. Contributions to this project are licensed under the MIT License (see [LICENSE](LICENSE)). All contributions are reviewed by the Euforicio maintainers.
 
 This project is a fork of the original [github/spec-kit](https://github.com/github/spec-kit) with enhancements and improvements by the euforicio organization.
 
@@ -25,7 +25,7 @@ These are one time installations required to be able to test your changes locall
 1. Run linter: `make lint`
 1. Test the CLI functionality with a sample project if relevant
 1. Push to your fork and submit a pull request
-1. Wait for your pull request to be reviewed and merged.
+1. Wait for your pull request to be reviewed and merged by the Euforicio maintainers.
 
 Here are a few things you can do that will increase the likelihood of your pull request being accepted:
 

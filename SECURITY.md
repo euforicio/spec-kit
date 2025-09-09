@@ -1,18 +1,18 @@
-Thanks for helping make GitHub safe for everyone.
+Thanks for helping keep Euforicio projects safe for everyone.
 
 # Security
 
-GitHub takes the security of our software products and services seriously, including all of the open source code repositories managed through our GitHub organizations, such as [GitHub](https://github.com/GitHub).
+Euforicio takes the security of Spec Kit and our other open source projects seriously, including all repositories under the Euforicio organization.
 
-Even though [open source repositories are outside of the scope of our bug bounty program](https://bounty.github.com/index.html#scope) and therefore not eligible for bounty rewards, we will ensure that your finding gets passed along to the appropriate maintainers for remediation. 
+While we do not currently run a public bug bounty program, we will ensure that valid security findings are promptly triaged and addressed by the Euforicio maintainers.
 
 ## Reporting Security Issues
 
-If you believe you have found a security vulnerability in any GitHub-owned repository, please report it to us through coordinated disclosure.
+If you believe you have found a security vulnerability in Spec Kit or any repository maintained by Euforicio, please report it to us through coordinated disclosure.
 
-**Please do not report security vulnerabilities through public GitHub issues, discussions, or pull requests.**
+**Please do not report security vulnerabilities through public issues, discussions, or pull requests.**
 
-Instead, please send an email to opensource-security[@]github.com.
+Instead, please use this repository's "Report a vulnerability" option under the Security tab to open a private advisory to the Euforicio maintainers. If you cannot access that feature, please email us at security@euforic.io.
 
 Please include as much of the information listed below as you can to help us better understand and resolve the issue:
 
@@ -28,4 +28,4 @@ This information will help us triage your report more quickly.
 
 ## Policy
 
-See [GitHub's Safe Harbor Policy](https://docs.github.com/en/site-policy/security-policies/github-bug-bounty-program-legal-safe-harbor#1-safe-harbor-terms)
+We support good-faith security research and coordinated disclosure. We will not pursue or support legal action against security researchers who report vulnerabilities to us in good faith.
