@@ -1,0 +1,38 @@
+# Go
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+go.work
+go.work.sum
+
+# Build artifacts
+bin/
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# macOS
+.DS_Store
+.DS_Store?
+
+# Project specific
+*.log
+.env
+.env.local
+*.lock
+
+# Release artifacts
+sdd-*-package/
+spec-kit-template-*.zip
+
+# Claude Code local settings
+.claude/settings.local.json
