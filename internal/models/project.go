@@ -47,7 +47,7 @@ func (ps ProjectState) String() string {
 }
 
 // ValidAIAssistants contains the list of supported AI assistants
-var ValidAIAssistants = []string{"claude", "gemini", "copilot"}
+var ValidAIAssistants = []string{"claude", "gemini", "copilot", "codex"}
 
 // NewProject creates a new Project instance with validation
 func NewProject(name, path, aiAssistant string, isHere bool) (*Project, error) {

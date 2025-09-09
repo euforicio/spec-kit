@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"path/filepath"
 
+	"github.com/euforicio/spec-kit/internal/codex"
 	"github.com/euforicio/spec-kit/internal/models"
 )
 
@@ -87,7 +88,12 @@ func (p *ProjectService) InitializeProject(options ProjectInitOptions) (*Project
 		result.Warnings = append(result.Warnings, warning)
 	}
 
-	// Step 7: Validate final result
+	// Step 7: Setup AI assistant specific files
+	if err := p.setupAIAssistantFiles(project); err != nil {
+		result.Warnings = append(result.Warnings, fmt.Sprintf("Failed to setup AI assistant files: %v", err))
+	}
+
+	// Step 8: Validate final result
 	if err := p.validateResult(project); err != nil {
 		return nil, err
 	}
@@ -294,6 +300,13 @@ func (p *ProjectService) GetNextSteps(result *ProjectInitResult) []string {
 		steps = append(steps,
 			"Open in Visual Studio Code and use /specify, /plan, /tasks commands with GitHub Copilot",
 		)
+	case "codex":
+		steps = append(steps,
+			"Open project with OpenAI Codex",
+			"Use / commands within Codex (e.g., /specify, /plan, /tasks)",
+			"See AGENTS.md for all available commands and patterns",
+			"Run 'specify feature create \"your feature\"' when ready to start development",
+		)
 	}
 
 	// Step 3: Constitution
@@ -346,4 +359,39 @@ func (p *ProjectService) EstimateProjectSize(aiAssistant string) (int64, error) 
 // ListAvailableTemplates returns information about all available templates
 func (p *ProjectService) ListAvailableTemplates() (map[string]*models.Template, error) {
 	return p.template.GetAvailableTemplates()
+}
+
+// setupAIAssistantFiles creates AI assistant specific files during project initialization
+func (p *ProjectService) setupAIAssistantFiles(project *models.Project) error {
+	switch project.AIAssistant {
+	case "codex":
+		return p.setupCodexFiles(project)
+	default:
+		// Other AI assistants handled by template files
+		return nil
+	}
+}
+
+// setupCodexFiles creates AGENTS.md and .codex/commands/ for Codex integration
+func (p *ProjectService) setupCodexFiles(project *models.Project) error {
+	// Create codex service
+	codexService := codex.NewService()
+	
+	// Generate basic AGENTS.md content (no plan content yet)
+	agentsContent, err := codexService.GenerateAGENTS("", nil)
+	if err != nil {
+		return fmt.Errorf("failed to generate AGENTS.md content: %w", err)
+	}
+	
+	// Write AGENTS.md to project directory
+	if err := codexService.WriteAGENTS(agentsContent, project.Path); err != nil {
+		return fmt.Errorf("failed to write AGENTS.md: %w", err)
+	}
+	
+	// Create command files
+	if err := codexService.WriteCommandFiles(false, project.Path); err != nil {
+		return fmt.Errorf("failed to write command files: %w", err)
+	}
+	
+	return nil
 }

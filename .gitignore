@@ -36,3 +36,4 @@ spec-kit-template-*.zip
 
 # Claude Code local settings
 .claude
+.codex

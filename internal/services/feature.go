@@ -472,11 +472,6 @@ func (f *FeatureService) extractTechInfo(content string) TechInfo {
 }
 
 func (f *FeatureService) updateAgentFile(filePath, agentType string, techInfo TechInfo, currentBranch string) error {
-	// Handle codex special case
-	if agentType == "codex" {
-		return f.updateCodexAgent(filePath, techInfo, currentBranch)
-	}
-
 	exists, err := f.filesystem.FileExists(filePath)
 	if err != nil {
 		return fmt.Errorf("failed to check file existence: %w", err)
@@ -493,50 +488,79 @@ func (f *FeatureService) updateAgentFile(filePath, agentType string, techInfo Te
 
 func (f *FeatureService) createAgentFile(filePath, agentType string, techInfo TechInfo, currentBranch string) error {
 	repoRoot, _ := f.git.GetRepoRoot()
-	templatePath := filepath.Join(repoRoot, "templates", "agent-file-template.md")
 	
 	var content string
-	if exists, _ := f.filesystem.FileExists(templatePath); exists {
-		templateContent, err := f.filesystem.ReadFile(templatePath)
-		if err != nil {
-			return fmt.Errorf("failed to read template: %w", err)
+	
+	// Handle codex special case - generate AGENTS.md with command system
+	if agentType == "codex" {
+		featureDir := filepath.Join(repoRoot, "specs", currentBranch)
+		planFile := filepath.Join(featureDir, "plan.md")
+		
+		// Read plan content if it exists
+		var planContent string
+		if exists, _ := f.filesystem.FileExists(planFile); exists {
+			planContent, _ = f.filesystem.ReadFile(planFile)
 		}
-		content = templateContent
+		
+		// Generate AGENTS.md content with command system
+		agentsContent, err := f.codex.GenerateAGENTS(planContent, nil)
+		if err != nil {
+			return fmt.Errorf("failed to generate AGENTS.md: %w", err)
+		}
+		content = agentsContent
+		
+		// Also create command files
+		if err := f.codex.WriteCommandFiles(false, repoRoot); err != nil {
+			return fmt.Errorf("failed to write command files: %w", err)
+		}
 	} else {
-		// Basic template if not found
-		content = f.getBasicAgentTemplate()
+		// Standard agent template approach
+		templatePath := filepath.Join(repoRoot, "templates", "agent-file-template.md")
+		
+		if exists, _ := f.filesystem.FileExists(templatePath); exists {
+			templateContent, err := f.filesystem.ReadFile(templatePath)
+			if err != nil {
+				return fmt.Errorf("failed to read template: %w", err)
+			}
+			content = templateContent
+		} else {
+			// Basic template if not found
+			content = f.getBasicAgentTemplate()
+		}
 	}
 
-	// Replace placeholders
-	content = strings.ReplaceAll(content, "[PROJECT NAME]", filepath.Base(repoRoot))
-	content = strings.ReplaceAll(content, "[DATE]", time.Now().Format("2006-01-02"))
-	
-	if techInfo.Language != "" && techInfo.Framework != "" {
-		content = strings.ReplaceAll(content, "[EXTRACTED FROM ALL PLAN.MD FILES]", 
-			fmt.Sprintf("- %s + %s (%s)", techInfo.Language, techInfo.Framework, currentBranch))
-	}
-	
-	// Add project structure based on type
-	if strings.Contains(techInfo.ProjectType, "web") {
-		content = strings.ReplaceAll(content, "[ACTUAL STRUCTURE FROM PLANS]", "backend/\nfrontend/\ntests/")
-	} else {
-		content = strings.ReplaceAll(content, "[ACTUAL STRUCTURE FROM PLANS]", "src/\ntests/")
-	}
-	
-	// Add commands based on language
-	commands := f.getCommandsForLanguage(techInfo.Language)
-	content = strings.ReplaceAll(content, "[ONLY COMMANDS FOR ACTIVE TECHNOLOGIES]", commands)
-	
-	// Add code style
-	if techInfo.Language != "" {
-		content = strings.ReplaceAll(content, "[LANGUAGE-SPECIFIC, ONLY FOR LANGUAGES IN USE]", 
-			fmt.Sprintf("%s: Follow standard conventions", techInfo.Language))
-	}
-	
-	// Add recent changes
-	if techInfo.Language != "" && techInfo.Framework != "" {
-		content = strings.ReplaceAll(content, "[LAST 3 FEATURES AND WHAT THEY ADDED]", 
-			fmt.Sprintf("- %s: Added %s + %s", currentBranch, techInfo.Language, techInfo.Framework))
+	// Replace placeholders (skip for codex since content is already complete)
+	if agentType != "codex" {
+		content = strings.ReplaceAll(content, "[PROJECT NAME]", filepath.Base(repoRoot))
+		content = strings.ReplaceAll(content, "[DATE]", time.Now().Format("2006-01-02"))
+		
+		if techInfo.Language != "" && techInfo.Framework != "" {
+			content = strings.ReplaceAll(content, "[EXTRACTED FROM ALL PLAN.MD FILES]", 
+				fmt.Sprintf("- %s + %s (%s)", techInfo.Language, techInfo.Framework, currentBranch))
+		}
+		
+		// Add project structure based on type
+		if strings.Contains(techInfo.ProjectType, "web") {
+			content = strings.ReplaceAll(content, "[ACTUAL STRUCTURE FROM PLANS]", "backend/\nfrontend/\ntests/")
+		} else {
+			content = strings.ReplaceAll(content, "[ACTUAL STRUCTURE FROM PLANS]", "src/\ntests/")
+		}
+		
+		// Add commands based on language
+		commands := f.getCommandsForLanguage(techInfo.Language)
+		content = strings.ReplaceAll(content, "[ONLY COMMANDS FOR ACTIVE TECHNOLOGIES]", commands)
+		
+		// Add code style
+		if techInfo.Language != "" {
+			content = strings.ReplaceAll(content, "[LANGUAGE-SPECIFIC, ONLY FOR LANGUAGES IN USE]", 
+				fmt.Sprintf("%s: Follow standard conventions", techInfo.Language))
+		}
+		
+		// Add recent changes
+		if techInfo.Language != "" && techInfo.Framework != "" {
+			content = strings.ReplaceAll(content, "[LAST 3 FEATURES AND WHAT THEY ADDED]", 
+				fmt.Sprintf("- %s: Added %s + %s", currentBranch, techInfo.Language, techInfo.Framework))
+		}
 	}
 
 	// Create directory if needed
@@ -553,6 +577,11 @@ func (f *FeatureService) updateExistingAgentFile(filePath string, techInfo TechI
 	content, err := f.filesystem.ReadFile(filePath)
 	if err != nil {
 		return fmt.Errorf("failed to read existing file: %w", err)
+	}
+
+	// Handle codex special case - update AGENTS.md with current plan info
+	if strings.HasSuffix(filePath, "AGENTS.md") {
+		return f.updateCodexAgentFile(filePath, techInfo, currentBranch, content)
 	}
 
 	// Simple update - add new technology to active technologies section
@@ -649,7 +678,7 @@ Last updated: [DATE]
 `
 }
 
-func (f *FeatureService) updateCodexAgent(filePath string, techInfo TechInfo, currentBranch string) error {
+func (f *FeatureService) updateCodexAgentFile(filePath string, techInfo TechInfo, currentBranch string, existingContent string) error {
 	repoRoot, err := f.git.GetRepoRoot()
 	if err != nil {
 		return fmt.Errorf("failed to get repository root: %w", err)
@@ -664,17 +693,8 @@ func (f *FeatureService) updateCodexAgent(filePath string, techInfo TechInfo, cu
 		return fmt.Errorf("failed to read plan file: %w", err)
 	}
 
-	// Read existing AGENTS.md if it exists
-	var existingContent []byte
-	if exists, _ := f.filesystem.FileExists(filePath); exists {
-		existingContent, err = f.filesystem.ReadFileBytes(filePath)
-		if err != nil {
-			return fmt.Errorf("failed to read existing AGENTS.md: %w", err)
-		}
-	}
-
-	// Generate AGENTS.md content
-	agentsContent, err := f.codex.GenerateAGENTS(planContent, existingContent)
+	// Generate updated AGENTS.md content using existing content
+	agentsContent, err := f.codex.GenerateAGENTS(planContent, []byte(existingContent))
 	if err != nil {
 		return fmt.Errorf("failed to generate AGENTS.md: %w", err)
 	}
@@ -684,7 +704,7 @@ func (f *FeatureService) updateCodexAgent(filePath string, techInfo TechInfo, cu
 		return fmt.Errorf("failed to write AGENTS.md: %w", err)
 	}
 
-	// Create command files
+	// Create command files (only if they don't exist)
 	if err := f.codex.WriteCommandFiles(false, repoRoot); err != nil {
 		return fmt.Errorf("failed to write command files: %w", err)
 	}

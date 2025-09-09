@@ -19,7 +19,7 @@ var initCmd = &cobra.Command{
 
 This command will:
 1. Check that required tools are installed (git is optional)
-2. Let you choose your AI assistant (Claude Code, Gemini CLI, or GitHub Copilot)
+2. Let you choose your AI assistant (Claude Code, Gemini CLI, GitHub Copilot, or OpenAI Codex)
 3. Download the appropriate template from GitHub
 4. Extract the template to a new project directory or current directory
 5. Initialize a fresh git repository (if not --no-git and no existing repo)
@@ -30,6 +30,7 @@ Examples:
   specify init my-project --ai claude
   specify init my-project --ai gemini
   specify init my-project --ai copilot --no-git
+  specify init my-project --ai codex
   specify init --ignore-agent-tools my-project
   specify init --here --ai claude
   specify init --here`,
@@ -45,7 +46,7 @@ var (
 )
 
 func init() {
-	initCmd.Flags().StringVar(&aiAssistant, "ai", "", "AI assistant to use: claude, gemini, or copilot")
+	initCmd.Flags().StringVar(&aiAssistant, "ai", "", "AI assistant to use: claude, gemini, copilot, or codex")
 	initCmd.Flags().BoolVar(&ignoreAgentTools, "ignore-agent-tools", false, "Skip checks for AI agent tools like Claude Code")
 	initCmd.Flags().BoolVar(&noGit, "no-git", false, "Skip git repository initialization")
 	initCmd.Flags().BoolVar(&here, "here", false, "Initialize project in the current directory instead of creating a new one")
@@ -224,9 +225,10 @@ func selectAIAssistant() (string, error) {
 	fmt.Println("1. Claude Code")
 	fmt.Println("2. Gemini CLI") 
 	fmt.Println("3. GitHub Copilot")
+	fmt.Println("4. OpenAI Codex")
 	fmt.Println()
 
-	choice := ui.PromptSelect("Choose (1-3): ", []string{"1", "2", "3"})
+	choice := ui.PromptSelect("Choose (1-4): ", []string{"1", "2", "3", "4"})
 
 	switch choice {
 	case "1":
@@ -235,6 +237,8 @@ func selectAIAssistant() (string, error) {
 		return "gemini", nil
 	case "3":
 		return "copilot", nil
+	case "4":
+		return "codex", nil
 	default:
 		return "", fmt.Errorf("invalid choice: %s", choice)
 	}
@@ -248,6 +252,8 @@ func getAIAssistantDisplayName(aiAssistant string) string {
 		return "Gemini CLI"
 	case "copilot":
 		return "GitHub Copilot"
+	case "codex":
+		return "OpenAI Codex"
 	default:
 		return aiAssistant
 	}
