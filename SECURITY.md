@@ -12,7 +12,7 @@ If you believe you have found a security vulnerability in Spec Kit or any reposi
 
 **Please do not report security vulnerabilities through public issues, discussions, or pull requests.**
 
-Instead, please use this repository's "Report a vulnerability" option under the Security tab to open a private advisory to the Euforicio maintainers. If you cannot access that feature, contact the maintainers using the contact information listed for this repository (e.g., in `CODEOWNERS` or the project profile).
+Instead, please use this repository's "Report a vulnerability" option under the Security tab to open a private advisory to the Euforicio maintainers. If you cannot access that feature, please email us at security@euforic.io.
 
 Please include as much of the information listed below as you can to help us better understand and resolve the issue:
 
