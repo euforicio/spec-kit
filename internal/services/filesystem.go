@@ -140,7 +140,7 @@ func (fs *FilesystemService) extractZIPFile(file *zip.File, destDir string) erro
 
 	// Ensure the file path is within the destination directory
 	if !strings.HasPrefix(path, filepath.Clean(destDir)+string(os.PathSeparator)) &&
-	   path != filepath.Clean(destDir) {
+		path != filepath.Clean(destDir) {
 		return fmt.Errorf("invalid file path: %s (potential directory traversal)", file.Name)
 	}
 
@@ -401,7 +401,7 @@ func (fs *FilesystemService) ListDirectory(path string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	names := make([]string, len(entries))
 	for i, entry := range entries {
 		names[i] = entry.Name()
@@ -415,6 +415,6 @@ func (fs *FilesystemService) CopyFile(src, dest string) error {
 	if err != nil {
 		return fmt.Errorf("failed to stat source file: %w", err)
 	}
-	
+
 	return fs.copyFile(src, dest, info.Mode())
 }

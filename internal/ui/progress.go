@@ -154,11 +154,11 @@ func (pt *ProgressTracker) displayStep(step *Step) {
 	}
 
 	fmt.Printf("   %s %s", symbol, step.Description)
-	
+
 	if step.Detail != "" {
 		fmt.Printf(" (%s)", step.Detail)
 	}
-	
+
 	fmt.Println()
 }
 
@@ -167,7 +167,7 @@ func (pt *ProgressTracker) GetSummary() string {
 	completed := 0
 	failed := 0
 	skipped := 0
-	
+
 	for _, step := range pt.steps {
 		switch step.Status {
 		case StepStatusCompleted:
@@ -178,17 +178,17 @@ func (pt *ProgressTracker) GetSummary() string {
 			skipped++
 		}
 	}
-	
+
 	total := len(pt.steps)
-	
+
 	if failed > 0 {
 		return fmt.Sprintf("%d/%d completed, %d failed", completed, total, failed)
 	}
-	
+
 	if skipped > 0 {
 		return fmt.Sprintf("%d/%d completed, %d skipped", completed, total, skipped)
 	}
-	
+
 	return fmt.Sprintf("%d/%d completed", completed, total)
 }
 

@@ -1,34 +1,34 @@
 package services
 
 import (
-    "encoding/json"
-    "fmt"
-    "io"
-    "net/http"
-    "strings"
-    "time"
+	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
+	"strings"
+	"time"
 
 	"github.com/euforicio/spec-kit/internal/models"
 )
 
 // GitHubService handles interactions with the GitHub API
 type GitHubService struct {
-	client   *http.Client
-	baseURL  string
+	client    *http.Client
+	baseURL   string
 	repoOwner string
 	repoName  string
 }
 
 // GitHubRelease represents a GitHub release from the API
 type GitHubRelease struct {
-	ID          int64     `json:"id"`
-	TagName     string    `json:"tag_name"`
-	Name        string    `json:"name"`
-	Body        string    `json:"body"`
-	Draft       bool      `json:"draft"`
-	Prerelease  bool      `json:"prerelease"`
-	CreatedAt   time.Time `json:"created_at"`
-	PublishedAt time.Time `json:"published_at"`
+	ID          int64         `json:"id"`
+	TagName     string        `json:"tag_name"`
+	Name        string        `json:"name"`
+	Body        string        `json:"body"`
+	Draft       bool          `json:"draft"`
+	Prerelease  bool          `json:"prerelease"`
+	CreatedAt   time.Time     `json:"created_at"`
+	PublishedAt time.Time     `json:"published_at"`
 	Assets      []GitHubAsset `json:"assets"`
 }
 
@@ -69,7 +69,7 @@ func NewGitHubServiceWithClient(client *http.Client, repoOwner, repoName string)
 // GetLatestRelease fetches the latest release from the GitHub repository
 func (g *GitHubService) GetLatestRelease() (*GitHubRelease, error) {
 	url := fmt.Sprintf("%s/repos/%s/%s/releases/latest", g.baseURL, g.repoOwner, g.repoName)
-	
+
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
@@ -111,28 +111,28 @@ func (g *GitHubService) GetLatestRelease() (*GitHubRelease, error) {
 
 // FindTemplateAsset finds the appropriate template asset for the given AI assistant
 func (g *GitHubService) FindTemplateAsset(release *GitHubRelease, aiAssistant string) (*GitHubAsset, error) {
-    if release == nil {
-        return nil, &models.TemplateError{
-            Type:      models.TemplateNotFound,
-            Assistant: aiAssistant,
-            Message:   "release cannot be nil",
-        }
-    }
+	if release == nil {
+		return nil, &models.TemplateError{
+			Type:      models.TemplateNotFound,
+			Assistant: aiAssistant,
+			Message:   "release cannot be nil",
+		}
+	}
 
-    // Try exact match first
-    expectedPattern := fmt.Sprintf("spec-kit-template-%s", aiAssistant)
-    for _, asset := range release.Assets {
-        if strings.Contains(asset.Name, expectedPattern) && strings.HasSuffix(asset.Name, ".zip") {
-            return &asset, nil
-        }
-    }
+	// Try exact match first
+	expectedPattern := fmt.Sprintf("spec-kit-template-%s", aiAssistant)
+	for _, asset := range release.Assets {
+		if strings.Contains(asset.Name, expectedPattern) && strings.HasSuffix(asset.Name, ".zip") {
+			return &asset, nil
+		}
+	}
 
-    // No alias fallback — require a native asset for the requested assistant.
+	// No alias fallback — require a native asset for the requested assistant.
 
-    // Build available assets list for error message
-    var availableAssets []string
-    for _, asset := range release.Assets {
-        availableAssets = append(availableAssets, asset.Name)
+	// Build available assets list for error message
+	var availableAssets []string
+	for _, asset := range release.Assets {
+		availableAssets = append(availableAssets, asset.Name)
 	}
 
 	return nil, &models.TemplateError{
@@ -146,14 +146,14 @@ func (g *GitHubService) FindTemplateAsset(release *GitHubRelease, aiAssistant st
 // GetTemplateForAI fetches the template information for a specific AI assistant
 func (g *GitHubService) GetTemplateForAI(aiAssistant string) (*models.Template, error) {
 	// Validate AI assistant
-    if !models.IsValidAgent(aiAssistant) {
-        return nil, &models.TemplateError{
-            Type:      models.TemplateNotFound,
-            Assistant: aiAssistant,
-            Message:   fmt.Sprintf("invalid AI assistant '%s', must be one of: %s", 
-                aiAssistant, strings.Join(models.ListAgents(), ", ")),
-        }
-    }
+	if !models.IsValidAgent(aiAssistant) {
+		return nil, &models.TemplateError{
+			Type:      models.TemplateNotFound,
+			Assistant: aiAssistant,
+			Message: fmt.Sprintf("invalid AI assistant '%s', must be one of: %s",
+				aiAssistant, strings.Join(models.ListAgents(), ", ")),
+		}
+	}
 
 	// Get latest release
 	release, err := g.GetLatestRelease()
@@ -278,7 +278,7 @@ func (g *GitHubService) CheckConnectivity() error {
 // GetRateLimitInfo returns information about GitHub API rate limiting
 func (g *GitHubService) GetRateLimitInfo() (limit, remaining int, resetTime time.Time, err error) {
 	url := fmt.Sprintf("%s/rate_limit", g.baseURL)
-	
+
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return 0, 0, time.Time{}, fmt.Errorf("failed to create rate limit request: %w", err)
@@ -312,7 +312,7 @@ func (g *GitHubService) GetRateLimitInfo() (limit, remaining int, resetTime time
 	}
 
 	return rateLimitResp.Resources.Core.Limit,
-		   rateLimitResp.Resources.Core.Remaining,
-		   time.Unix(rateLimitResp.Resources.Core.Reset, 0),
-		   nil
+		rateLimitResp.Resources.Core.Remaining,
+		time.Unix(rateLimitResp.Resources.Core.Reset, 0),
+		nil
 }

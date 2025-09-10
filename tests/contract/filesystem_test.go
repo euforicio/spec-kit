@@ -153,7 +153,7 @@ func TestFileMergingContract(t *testing.T) {
 		// Create existing directory with content
 		err := os.MkdirAll(existingDir, 0755)
 		require.NoError(t, err)
-		
+
 		existingFile := filepath.Join(existingDir, "existing.txt")
 		err = os.WriteFile(existingFile, []byte("existing"), 0644)
 		require.NoError(t, err)
@@ -161,7 +161,7 @@ func TestFileMergingContract(t *testing.T) {
 		// Create source directory with new content
 		err = os.MkdirAll(sourceDir, 0755)
 		require.NoError(t, err)
-		
+
 		newFile := filepath.Join(sourceDir, "new.txt")
 		err = os.WriteFile(newFile, []byte("new content"), 0644)
 		require.NoError(t, err)
@@ -188,7 +188,7 @@ func TestFileMergingContract(t *testing.T) {
 		// Create existing directory with file
 		err := os.MkdirAll(existingDir, 0755)
 		require.NoError(t, err)
-		
+
 		conflictFile := filepath.Join(existingDir, "conflict.txt")
 		err = os.WriteFile(conflictFile, []byte("existing content"), 0644)
 		require.NoError(t, err)
@@ -196,14 +196,14 @@ func TestFileMergingContract(t *testing.T) {
 		// Create source directory with conflicting file
 		err = os.MkdirAll(sourceDir, 0755)
 		require.NoError(t, err)
-		
+
 		sourceConflictFile := filepath.Join(sourceDir, "conflict.txt")
 		err = os.WriteFile(sourceConflictFile, []byte("new content"), 0644)
 		require.NoError(t, err)
 
 		// Test merging with conflict
 		err = mergeDirectories(sourceDir, existingDir)
-		
+
 		// Behavior depends on implementation - could overwrite, skip, or error
 		// The important part is that it handles the conflict gracefully
 		if err != nil {
@@ -248,14 +248,14 @@ func TestPermissionsContract(t *testing.T) {
 		// Copy file and verify permissions are preserved
 		sourceContent, err := os.ReadFile(sourceFile)
 		require.NoError(t, err)
-		
+
 		err = os.WriteFile(destFile, sourceContent, 0644)
 		require.NoError(t, err)
 
 		// Check permissions
 		sourceInfo, err := os.Stat(sourceFile)
 		require.NoError(t, err)
-		
+
 		destInfo, err := os.Stat(destFile)
 		require.NoError(t, err)
 
@@ -268,7 +268,7 @@ func TestPermissionsContract(t *testing.T) {
 
 func createTestZIP(t *testing.T, zipPath string) {
 	t.Helper()
-	
+
 	zipFile, err := os.Create(zipPath)
 	require.NoError(t, err)
 	defer zipFile.Close()
@@ -291,7 +291,7 @@ func createTestZIP(t *testing.T, zipPath string) {
 
 func createNestedZIP(t *testing.T, zipPath string) {
 	t.Helper()
-	
+
 	zipFile, err := os.Create(zipPath)
 	require.NoError(t, err)
 	defer zipFile.Close()
@@ -325,7 +325,7 @@ func extractZIP(zipPath, destDir string) error {
 
 	for _, file := range reader.File {
 		path := filepath.Join(destDir, file.Name)
-		
+
 		if file.FileInfo().IsDir() {
 			err := os.MkdirAll(path, file.FileInfo().Mode())
 			if err != nil {

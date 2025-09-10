@@ -39,19 +39,19 @@ Additional instructions that should remain.
 
 	// This test MUST fail initially - UpdateAgentsMD function doesn't exist yet
 	filePath, updated, err := models.UpdateAgentsMD(tempDir)
-	
+
 	assert.NoError(t, err, "AGENTS.md update should succeed")
 	assert.True(t, updated, "Should report file was updated")
 	assert.Equal(t, agentsPath, filePath, "Returned path should match expected")
-	
+
 	// Verify file still exists
 	assert.FileExists(t, agentsPath, "AGENTS.md should still exist")
-	
+
 	// Read updated content
 	content, err := os.ReadFile(agentsPath)
 	require.NoError(t, err)
 	contentStr := string(content)
-	
+
 	// Should preserve custom content outside delimited section
 	assert.Contains(t, contentStr, "# My Custom Agent Instructions", "Should preserve custom header")
 	assert.Contains(t, contentStr, "This is my custom content that should be preserved.", "Should preserve custom intro")
@@ -59,7 +59,7 @@ Additional instructions that should remain.
 	assert.Contains(t, contentStr, "Important custom instructions here.", "Should preserve custom section content")
 	assert.Contains(t, contentStr, "## More Custom Content", "Should preserve trailing custom section")
 	assert.Contains(t, contentStr, "Additional instructions that should remain.", "Should preserve trailing custom content")
-	
+
 	// Should replace content within delimited section
 	assert.NotContains(t, contentStr, "Old specify content that should be replaced.", "Should replace old delimited content")
 	assert.Contains(t, contentStr, "/specify", "Should have new /specify documentation")
@@ -89,21 +89,21 @@ Do this and that.
 
 	// This test MUST fail initially - UpdateAgentsMD function doesn't exist yet
 	filePath, updated, err := models.UpdateAgentsMD(tempDir)
-	
+
 	assert.NoError(t, err, "AGENTS.md update should succeed")
 	assert.True(t, updated, "Should report file was updated")
-	
+
 	// Read updated content
 	content, err := os.ReadFile(filePath)
 	require.NoError(t, err)
 	contentStr := string(content)
-	
+
 	// Should preserve existing content
 	assert.Contains(t, contentStr, "# My Agent Instructions", "Should preserve existing header")
 	assert.Contains(t, contentStr, "Custom content without any specify section.", "Should preserve existing content")
 	assert.Contains(t, contentStr, "## Custom Instructions", "Should preserve existing section")
 	assert.Contains(t, contentStr, "Do this and that.", "Should preserve existing instructions")
-	
+
 	// Should add new delimited section
 	assert.Contains(t, contentStr, "<specify>", "Should add opening delimiter")
 	assert.Contains(t, contentStr, "</specify>", "Should add closing delimiter")
@@ -165,7 +165,7 @@ Second section
 
 			// This test MUST fail initially - UpdateAgentsMD function doesn't exist yet
 			_, _, err = models.UpdateAgentsMD(tempDir)
-			
+
 			if tc.expectError {
 				assert.Error(t, err, "Should fail with malformed delimited section")
 				assert.Contains(t, err.Error(), "malformed", "Error should mention malformed section")
@@ -198,7 +198,7 @@ func TestAgentsMDUpdate_PermissionError(t *testing.T) {
 
 	// This test MUST fail initially - UpdateAgentsMD function doesn't exist yet
 	_, _, err = models.UpdateAgentsMD(tempDir)
-	
+
 	assert.Error(t, err, "Should fail with permission error")
 	assert.Contains(t, err.Error(), "permission denied", "Error should mention permission denied")
 }
@@ -254,13 +254,13 @@ Final section content.
 	assert.Equal(t, 1, strings.Count(contentStr, "# Complex Agent Instructions"), "Should have exactly one main header")
 	assert.Equal(t, 2, strings.Count(contentStr, "## Section"), "Should preserve section headers")
 	assert.Equal(t, 2, strings.Count(contentStr, "### Subsection"), "Should preserve subsection headers")
-	
+
 	// Check markdown formatting preservation
 	assert.Contains(t, contentStr, "**Bold text**", "Should preserve bold formatting")
 	assert.Contains(t, contentStr, "*italic text*", "Should preserve italic formatting")
 	assert.Contains(t, contentStr, "`Code blocks should be preserved`", "Should preserve code formatting")
 	assert.Contains(t, contentStr, "> Block quotes should be preserved", "Should preserve block quotes")
-	
+
 	// Check list preservation
 	assert.Contains(t, contentStr, "- Item 1", "Should preserve list items")
 	assert.Contains(t, contentStr, "- Item 2", "Should preserve list items")

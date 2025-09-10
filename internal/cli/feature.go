@@ -106,7 +106,6 @@ Must be run from a valid feature branch.`,
 	RunE: runFeaturePaths,
 }
 
-
 func init() {
 	// Add feature subcommands
 	featureCmd.AddCommand(featureCreateCmd)
@@ -123,7 +122,7 @@ func init() {
 
 func runFeatureCreate(cmd *cobra.Command, args []string) error {
 	description := strings.Join(args, " ")
-	
+
 	filesystem := services.NewFilesystemService()
 	git := services.NewGitService()
 	feature := services.NewFeatureService(filesystem, git)
@@ -228,7 +227,7 @@ func runFeatureContext(cmd *cobra.Command, args []string) error {
 	}
 
 	fmt.Printf("=== Updating agent context files for feature %s ===\n", result.Branch)
-	
+
 	for _, update := range result.Updates {
 		fmt.Printf("✅ %s context file updated successfully\n", update.Agent)
 	}

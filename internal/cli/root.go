@@ -39,7 +39,7 @@ func Execute() error {
 func init() {
 	// Add version flag
 	rootCmd.Flags().BoolP("version", "v", false, "Show version information")
-	
+
 	// Add commands
 	rootCmd.AddCommand(initCmd)
 	rootCmd.AddCommand(checkCmd)

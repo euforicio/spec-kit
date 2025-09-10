@@ -22,12 +22,12 @@ type GitHubRelease struct {
 	CreatedAt   time.Time `json:"created_at"`
 	PublishedAt time.Time `json:"published_at"`
 	Assets      []struct {
-		ID                 int64  `json:"id"`
-		Name               string `json:"name"`
-		Label              string `json:"label"`
-		ContentType        string `json:"content_type"`
-		Size               int64  `json:"size"`
-		BrowserDownloadURL string `json:"browser_download_url"`
+		ID                 int64     `json:"id"`
+		Name               string    `json:"name"`
+		Label              string    `json:"label"`
+		ContentType        string    `json:"content_type"`
+		Size               int64     `json:"size"`
+		BrowserDownloadURL string    `json:"browser_download_url"`
 		CreatedAt          time.Time `json:"created_at"`
 		UpdatedAt          time.Time `json:"updated_at"`
 	} `json:"assets"`
@@ -47,7 +47,7 @@ func TestGitHubAPIContract(t *testing.T) {
 
 	t.Run("GitHub API releases endpoint responds correctly", func(t *testing.T) {
 		client := &http.Client{Timeout: 30 * time.Second}
-		
+
 		resp, err := client.Get(apiURL)
 		require.NoError(t, err, "should be able to contact GitHub API")
 		defer resp.Body.Close()
@@ -76,8 +76,8 @@ func TestGitHubAPIContract(t *testing.T) {
 			expectedPattern := "spec-kit-template-" + ai
 
 			for _, asset := range release.Assets {
-				if containsString(asset.Name, expectedPattern) && 
-				   endsWithString(asset.Name, ".zip") {
+				if containsString(asset.Name, expectedPattern) &&
+					endsWithString(asset.Name, ".zip") {
 					found = true
 
 					// Validate asset properties
@@ -94,7 +94,7 @@ func TestGitHubAPIContract(t *testing.T) {
 
 	t.Run("GitHub API rate limiting headers present", func(t *testing.T) {
 		client := &http.Client{Timeout: 30 * time.Second}
-		
+
 		resp, err := client.Get(apiURL)
 		require.NoError(t, err, "should be able to contact GitHub API")
 		defer resp.Body.Close()
@@ -107,7 +107,7 @@ func TestGitHubAPIContract(t *testing.T) {
 
 	t.Run("asset download URLs are accessible", func(t *testing.T) {
 		client := &http.Client{Timeout: 30 * time.Second}
-		
+
 		// Get release info first
 		resp, err := client.Get(apiURL)
 		require.NoError(t, err)
@@ -120,14 +120,14 @@ func TestGitHubAPIContract(t *testing.T) {
 		// Test that at least one asset download URL is accessible
 		if len(release.Assets) > 0 {
 			asset := release.Assets[0]
-			
+
 			// Make HEAD request to check if asset is downloadable
 			headResp, err := client.Head(asset.BrowserDownloadURL)
 			require.NoError(t, err, "asset download URL should be accessible")
 			defer headResp.Body.Close()
 
 			assert.Equal(t, http.StatusOK, headResp.StatusCode, "asset should be downloadable")
-			
+
 			// Should have content-length header
 			contentLength := headResp.Header.Get("Content-Length")
 			assert.NotEmpty(t, contentLength, "should provide content length")
@@ -142,7 +142,7 @@ func TestGitHubAPIErrorHandling(t *testing.T) {
 
 	t.Run("non-existent repository returns 404", func(t *testing.T) {
 		client := &http.Client{Timeout: 10 * time.Second}
-		
+
 		// Try to access a non-existent repository
 		nonExistentURL := "https://api.github.com/repos/non-existent-user/non-existent-repo/releases/latest"
 		resp, err := client.Get(nonExistentURL)
@@ -154,7 +154,7 @@ func TestGitHubAPIErrorHandling(t *testing.T) {
 
 	t.Run("malformed API URL returns error", func(t *testing.T) {
 		client := &http.Client{Timeout: 10 * time.Second}
-		
+
 		// Try to access a malformed URL
 		malformedURL := "https://api.github.com/repos/github/spec-kit/releases/invalid-endpoint"
 		resp, err := client.Get(malformedURL)
@@ -172,7 +172,7 @@ func TestGitHubAPIResponseStructure(t *testing.T) {
 
 	t.Run("response contains all required fields", func(t *testing.T) {
 		client := &http.Client{Timeout: 30 * time.Second}
-		
+
 		resp, err := client.Get("https://api.github.com/repos/github/spec-kit/releases/latest")
 		require.NoError(t, err)
 		defer resp.Body.Close()

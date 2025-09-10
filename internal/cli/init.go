@@ -1,9 +1,9 @@
 package cli
 
 import (
-    "fmt"
-    "path/filepath"
-    "strings"
+	"fmt"
+	"path/filepath"
+	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -45,7 +45,7 @@ var (
 )
 
 func init() {
-    initCmd.Flags().StringVar(&aiAssistant, "ai", "", "AI assistant to use: claude, gemini, copilot, or codex")
+	initCmd.Flags().StringVar(&aiAssistant, "ai", "", "AI assistant to use: claude, gemini, copilot, or codex")
 	initCmd.Flags().BoolVar(&ignoreAgentTools, "ignore-agent-tools", false, "Skip checks for AI agent tools like Claude Code")
 	initCmd.Flags().BoolVar(&noGit, "no-git", false, "Skip git repository initialization")
 	initCmd.Flags().BoolVar(&here, "here", false, "Initialize project in the current directory instead of creating a new one")
@@ -117,7 +117,7 @@ func runInit(cmd *cobra.Command, args []string) error {
 		if !isEmpty && !force {
 			fmt.Printf("Warning: Current directory is not empty.\n")
 			fmt.Printf("Template files will be merged with existing content and may overwrite existing files.\n")
-			
+
 			if !ui.Confirm("Do you want to continue?") {
 				fmt.Println("Operation cancelled")
 				return nil
@@ -133,11 +133,11 @@ func runInit(cmd *cobra.Command, args []string) error {
 			return err
 		}
 	} else {
-        // Validate provided AI assistant
-        if !models.IsValidAgent(options.AIAssistant) {
-            return fmt.Errorf("invalid AI assistant '%s', must be one of: %s", 
-                options.AIAssistant, strings.Join(models.ListAgents(), ", "))
-        }
+		// Validate provided AI assistant
+		if !models.IsValidAgent(options.AIAssistant) {
+			return fmt.Errorf("invalid AI assistant '%s', must be one of: %s",
+				options.AIAssistant, strings.Join(models.ListAgents(), ", "))
+		}
 	}
 
 	// Show project information
@@ -215,7 +215,7 @@ func runInit(cmd *cobra.Command, args []string) error {
 func selectAIAssistant() (string, error) {
 	fmt.Println("Select your AI assistant:")
 	fmt.Println("1. Claude Code")
-	fmt.Println("2. Gemini CLI") 
+	fmt.Println("2. Gemini CLI")
 	fmt.Println("3. GitHub Copilot")
 	fmt.Println("4. OpenAI Codex")
 	fmt.Println()

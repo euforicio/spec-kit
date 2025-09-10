@@ -1,21 +1,21 @@
 package models
 
 import (
-    "fmt"
-    "net/url"
-    "strings"
-    "time"
+	"fmt"
+	"net/url"
+	"strings"
+	"time"
 )
 
 // Template represents a downloadable project template from GitHub releases.
 type Template struct {
-	AIAssistant   string    `json:"ai_assistant"`   // AI assistant type (claude, gemini, copilot)
-	Version       string    `json:"version"`        // GitHub release version (tag_name)
-	DownloadURL   string    `json:"download_url"`   // Direct download URL for ZIP file
-	FileName      string    `json:"file_name"`      // ZIP file name
-	Size          int64     `json:"size"`           // File size in bytes
-	ReleaseDate   time.Time `json:"release_date"`   // When release was published
-	AssetName     string    `json:"asset_name"`     // GitHub asset name pattern
+	AIAssistant string    `json:"ai_assistant"` // AI assistant type (claude, gemini, copilot)
+	Version     string    `json:"version"`      // GitHub release version (tag_name)
+	DownloadURL string    `json:"download_url"` // Direct download URL for ZIP file
+	FileName    string    `json:"file_name"`    // ZIP file name
+	Size        int64     `json:"size"`         // File size in bytes
+	ReleaseDate time.Time `json:"release_date"` // When release was published
+	AssetName   string    `json:"asset_name"`   // GitHub asset name pattern
 }
 
 // TemplateState represents the current state of template processing
@@ -104,17 +104,17 @@ func (t *Template) validateAIAssistant() error {
 		}
 	}
 
-    // Check if AI assistant is valid
-    if IsValidAgent(t.AIAssistant) {
-        return nil
-    }
+	// Check if AI assistant is valid
+	if IsValidAgent(t.AIAssistant) {
+		return nil
+	}
 
 	return &TemplateError{
 		Type:      TemplateNotFound,
 		Assistant: t.AIAssistant,
-        Message:   fmt.Sprintf("invalid AI assistant '%s', must be one of: %s", 
-            t.AIAssistant, strings.Join(ListAgents(), ", ")),
-    }
+		Message: fmt.Sprintf("invalid AI assistant '%s', must be one of: %s",
+			t.AIAssistant, strings.Join(ListAgents(), ", ")),
+	}
 }
 
 // validateDownloadURL validates the download URL

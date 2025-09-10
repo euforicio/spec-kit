@@ -88,7 +88,7 @@ func (tet TemplateErrorType) String() string {
 func (te *TemplateError) Error() string {
 	base := fmt.Sprintf("template error (%s) for assistant '%s': %s", te.Type.String(), te.Assistant, te.Message)
 	if te.Version != "" {
-		base = fmt.Sprintf("template error (%s) for assistant '%s' version '%s': %s", 
+		base = fmt.Sprintf("template error (%s) for assistant '%s' version '%s': %s",
 			te.Type.String(), te.Assistant, te.Version, te.Message)
 	}
 	if te.Cause != nil {

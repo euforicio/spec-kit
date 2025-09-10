@@ -21,15 +21,15 @@ func TestCLIInitHereContract(t *testing.T) {
 		cmd := exec.Command(binaryPath, "init", "--here")
 		cmd.Dir = tempDir
 		output, err := cmd.CombinedOutput()
-		
+
 		outputStr := string(output)
 		t.Logf("Command output: %s", outputStr)
-		
+
 		// Expected to fail during TDD phase
 		if err != nil {
 			assert.True(t,
 				strings.Contains(outputStr, "init") ||
-				strings.Contains(outputStr, "here"),
+					strings.Contains(outputStr, "here"),
 				"error should mention init or here flag")
 			return
 		}
@@ -42,7 +42,7 @@ func TestCLIInitHereContract(t *testing.T) {
 
 	t.Run("specify init --here in non-empty directory", func(t *testing.T) {
 		tempDir := t.TempDir()
-		
+
 		// Create some existing files
 		existingFile := filepath.Join(tempDir, "existing.txt")
 		err := os.WriteFile(existingFile, []byte("existing content"), 0644)
@@ -51,17 +51,17 @@ func TestCLIInitHereContract(t *testing.T) {
 		cmd := exec.Command(binaryPath, "init", "--here")
 		cmd.Dir = tempDir
 		output, err := cmd.CombinedOutput()
-		
+
 		outputStr := string(output)
 		t.Logf("Command output: %s", outputStr)
-		
+
 		if err != nil {
 			// During TDD phase, expected to fail
 			assert.True(t,
 				strings.Contains(outputStr, "init") ||
-				strings.Contains(outputStr, "here") ||
-				strings.Contains(outputStr, "empty") ||
-				strings.Contains(outputStr, "confirm"),
+					strings.Contains(outputStr, "here") ||
+					strings.Contains(outputStr, "empty") ||
+					strings.Contains(outputStr, "confirm"),
 				"error should be related to init, directory state, or confirmation")
 			return
 		}
@@ -69,12 +69,12 @@ func TestCLIInitHereContract(t *testing.T) {
 		// Once implemented:
 		// - Original file should still exist
 		assert.FileExists(t, existingFile, "existing files should be preserved")
-		
+
 		// - Content should be preserved
 		content, err := os.ReadFile(existingFile)
 		require.NoError(t, err)
 		assert.Equal(t, "existing content", string(content), "existing content should be preserved")
-		
+
 		// - New template files should be added
 		files, err := os.ReadDir(tempDir)
 		require.NoError(t, err)
@@ -87,17 +87,17 @@ func TestCLIInitHereContract(t *testing.T) {
 		cmd := exec.Command(binaryPath, "init", "--here", "--ai", "claude")
 		cmd.Dir = tempDir
 		output, err := cmd.CombinedOutput()
-		
+
 		outputStr := string(output)
 		t.Logf("Command output: %s", outputStr)
-		
+
 		if err != nil {
 			// Expected during TDD phase
 			assert.True(t,
 				strings.Contains(outputStr, "init") ||
-				strings.Contains(outputStr, "here") ||
-				strings.Contains(outputStr, "claude") ||
-				strings.Contains(outputStr, "ai"),
+					strings.Contains(outputStr, "here") ||
+					strings.Contains(outputStr, "claude") ||
+					strings.Contains(outputStr, "ai"),
 				"error should mention init, here, or AI selection")
 			return
 		}
@@ -106,7 +106,7 @@ func TestCLIInitHereContract(t *testing.T) {
 		files, err := os.ReadDir(tempDir)
 		require.NoError(t, err)
 		assert.NotEmpty(t, files, "should contain template files")
-		
+
 		// Should contain Claude-specific files (e.g., CLAUDE.md)
 		claudeFile := filepath.Join(tempDir, "CLAUDE.md")
 		// Note: This test assumes the template structure - may need adjustment
@@ -122,16 +122,16 @@ func TestCLIInitHereContract(t *testing.T) {
 		cmd := exec.Command(binaryPath, "init", "--here", "--no-git")
 		cmd.Dir = tempDir
 		output, err := cmd.CombinedOutput()
-		
+
 		outputStr := string(output)
 		t.Logf("Command output: %s", outputStr)
-		
+
 		if err != nil {
 			// Expected during TDD phase
 			assert.True(t,
 				strings.Contains(outputStr, "init") ||
-				strings.Contains(outputStr, "here") ||
-				strings.Contains(outputStr, "git"),
+					strings.Contains(outputStr, "here") ||
+					strings.Contains(outputStr, "git"),
 				"error should mention init, here, or git")
 			return
 		}
@@ -144,7 +144,7 @@ func TestCLIInitHereContract(t *testing.T) {
 
 	t.Run("specify init --here in existing git repo", func(t *testing.T) {
 		tempDir := t.TempDir()
-		
+
 		// Initialize git repo first
 		gitCmd := exec.Command("git", "init")
 		gitCmd.Dir = tempDir
@@ -156,16 +156,16 @@ func TestCLIInitHereContract(t *testing.T) {
 		cmd := exec.Command(binaryPath, "init", "--here")
 		cmd.Dir = tempDir
 		output, err := cmd.CombinedOutput()
-		
+
 		outputStr := string(output)
 		t.Logf("Command output: %s", outputStr)
-		
+
 		if err != nil {
 			// Expected during TDD phase
 			assert.True(t,
 				strings.Contains(outputStr, "init") ||
-				strings.Contains(outputStr, "here") ||
-				strings.Contains(outputStr, "git"),
+					strings.Contains(outputStr, "here") ||
+					strings.Contains(outputStr, "git"),
 				"error should mention init, here, or git")
 			return
 		}
@@ -187,17 +187,17 @@ func TestCLIInitHereErrorHandling(t *testing.T) {
 		cmd := exec.Command(binaryPath, "init", "project-name", "--here")
 		cmd.Dir = tempDir
 		output, err := cmd.CombinedOutput()
-		
+
 		// Should fail because project name and --here are mutually exclusive
 		assert.Error(t, err, "should fail with both project name and --here")
-		
+
 		outputStr := string(output)
 		assert.True(t,
 			strings.Contains(outputStr, "cannot") ||
-			strings.Contains(outputStr, "both") ||
-			strings.Contains(outputStr, "mutually") ||
-			strings.Contains(outputStr, "exclusive") ||
-			strings.Contains(outputStr, "here"),
+				strings.Contains(outputStr, "both") ||
+				strings.Contains(outputStr, "mutually") ||
+				strings.Contains(outputStr, "exclusive") ||
+				strings.Contains(outputStr, "here"),
 			"error should indicate conflicting options")
 	})
 
@@ -215,16 +215,16 @@ func TestCLIInitHereErrorHandling(t *testing.T) {
 		cmd := exec.Command(binaryPath, "init", "--here")
 		cmd.Dir = restrictedDir
 		output, err := cmd.CombinedOutput()
-		
+
 		// Should fail due to permission denied
 		assert.Error(t, err, "should fail with permission denied")
-		
+
 		outputStr := string(output)
 		assert.True(t,
 			strings.Contains(outputStr, "permission") ||
-			strings.Contains(outputStr, "denied") ||
-			strings.Contains(outputStr, "access") ||
-			strings.Contains(outputStr, "error"),
+				strings.Contains(outputStr, "denied") ||
+				strings.Contains(outputStr, "access") ||
+				strings.Contains(outputStr, "error"),
 			"error should indicate permission problem")
 	})
 }

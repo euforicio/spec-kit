@@ -1,18 +1,18 @@
 package models
 
 import (
-    "fmt"
-    "slices"
-    "runtime"
+	"fmt"
+	"runtime"
+	"slices"
 )
 
 // Environment represents the user's local development environment and tool availability.
 type Environment struct {
 	Tools       map[string]ToolStatus `json:"tools"`        // Available tools and their status
-	Platform    string               `json:"platform"`     // Operating system (linux, darwin, windows)
-	HasInternet bool                 `json:"has_internet"` // Internet connectivity status
-	GitConfig   GitConfig            `json:"git_config"`   // Git configuration details
-	WorkingDir  string               `json:"working_dir"`  // Current working directory
+	Platform    string                `json:"platform"`     // Operating system (linux, darwin, windows)
+	HasInternet bool                  `json:"has_internet"` // Internet connectivity status
+	GitConfig   GitConfig             `json:"git_config"`   // Git configuration details
+	WorkingDir  string                `json:"working_dir"`  // Current working directory
 }
 
 // ToolStatus represents the status of a development tool
@@ -41,7 +41,7 @@ var RequiredTools = map[string]string{
 // OptionalTools contains AI assistant tools and their install hints
 var OptionalTools = map[string]string{
 	"claude": "Install from: https://docs.anthropic.com/en/docs/claude-code/setup",
-	"gemini": "Install from: https://github.com/google-gemini/gemini-cli", 
+	"gemini": "Install from: https://github.com/google-gemini/gemini-cli",
 	"codex":  "Install from: https://github.com/openai/codex",
 }
 
@@ -87,10 +87,10 @@ func (e *Environment) validatePlatform() error {
 		}
 	}
 
-    // Check if platform is supported
-    if slices.Contains(SupportedPlatforms, e.Platform) {
-        return nil
-    }
+	// Check if platform is supported
+	if slices.Contains(SupportedPlatforms, e.Platform) {
+		return nil
+	}
 
 	return &EnvironmentError{
 		Type:    ToolNotFound,
@@ -223,15 +223,15 @@ func (e *Environment) GetReadinessStatus() string {
 
 // GetInstallHint returns installation instructions for a given tool
 func GetInstallHint(tool string) string {
-    // Check in required tools
-    if hint, exists := RequiredTools[tool]; exists {
-        return hint
-    }
+	// Check in required tools
+	if hint, exists := RequiredTools[tool]; exists {
+		return hint
+	}
 
-    // Check in optional tools  
-    if hint, exists := OptionalTools[tool]; exists {
-        return hint
-    }
+	// Check in optional tools
+	if hint, exists := OptionalTools[tool]; exists {
+		return hint
+	}
 
-    return fmt.Sprintf("Installation instructions not available for tool: %s", tool)
+	return fmt.Sprintf("Installation instructions not available for tool: %s", tool)
 }

@@ -1,11 +1,11 @@
 package models
 
 import (
-    "fmt"
-    "path/filepath"
-    "slices"
-    "strings"
-    "time"
+	"fmt"
+	"path/filepath"
+	"slices"
+	"strings"
+	"time"
 )
 
 // Project represents a spec-driven development project being initialized.
@@ -99,29 +99,29 @@ func (p *Project) validateName() error {
 		}
 	}
 
-    // Check for invalid characters in project name
-    invalidChars := []string{"/", "\\", ":", "*", "?", "\"", "<", ">", "|"}
-    if idx := slices.IndexFunc(invalidChars, func(c string) bool { return strings.Contains(p.Name, c) }); idx != -1 {
-        badChar := invalidChars[idx]
-        return &ProjectError{
-            Type:    ProjectNameInvalid,
-            Path:    p.Path,
-            Message: fmt.Sprintf("project name contains invalid character: %s", badChar),
-        }
-    }
+	// Check for invalid characters in project name
+	invalidChars := []string{"/", "\\", ":", "*", "?", "\"", "<", ">", "|"}
+	if idx := slices.IndexFunc(invalidChars, func(c string) bool { return strings.Contains(p.Name, c) }); idx != -1 {
+		badChar := invalidChars[idx]
+		return &ProjectError{
+			Type:    ProjectNameInvalid,
+			Path:    p.Path,
+			Message: fmt.Sprintf("project name contains invalid character: %s", badChar),
+		}
+	}
 
 	// Check for reserved names (platform-specific)
-	reservedNames := []string{"con", "prn", "aux", "nul", "com1", "com2", "com3", 
-		"com4", "com5", "com6", "com7", "com8", "com9", "lpt1", "lpt2", "lpt3", 
+	reservedNames := []string{"con", "prn", "aux", "nul", "com1", "com2", "com3",
+		"com4", "com5", "com6", "com7", "com8", "com9", "lpt1", "lpt2", "lpt3",
 		"lpt4", "lpt5", "lpt6", "lpt7", "lpt8", "lpt9"}
-	
-    if slices.ContainsFunc(reservedNames, func(r string) bool { return strings.EqualFold(p.Name, r) }) {
-        return &ProjectError{
-            Type:    ProjectNameInvalid,
-            Path:    p.Path,
-            Message: fmt.Sprintf("project name '%s' is reserved", p.Name),
-        }
-    }
+
+	if slices.ContainsFunc(reservedNames, func(r string) bool { return strings.EqualFold(p.Name, r) }) {
+		return &ProjectError{
+			Type:    ProjectNameInvalid,
+			Path:    p.Path,
+			Message: fmt.Sprintf("project name '%s' is reserved", p.Name),
+		}
+	}
 
 	return nil
 }
@@ -158,17 +158,17 @@ func (p *Project) validateAIAssistant() error {
 		}
 	}
 
-    // Check if AI assistant is in the valid list
-    if IsValidAgent(p.AIAssistant) {
-        return nil
-    }
+	// Check if AI assistant is in the valid list
+	if IsValidAgent(p.AIAssistant) {
+		return nil
+	}
 
 	return &ProjectError{
-		Type:    ProjectNameInvalid,
-		Path:    p.Path,
-        Message: fmt.Sprintf("invalid AI assistant '%s', must be one of: %s", 
-            p.AIAssistant, strings.Join(ListAgents(), ", ")),
-    }
+		Type: ProjectNameInvalid,
+		Path: p.Path,
+		Message: fmt.Sprintf("invalid AI assistant '%s', must be one of: %s",
+			p.AIAssistant, strings.Join(ListAgents(), ", ")),
+	}
 }
 
 // GetDisplayName returns the display name for the project
@@ -193,16 +193,16 @@ func (p *Project) ShouldInitializeGit() bool {
 
 // ValidateAgentType validates an agent type and returns validation result with display name
 func ValidateAgentType(agentType string) (isValid bool, displayName string, errorMsg string) {
-    if agentType == "" {
-        return false, "", "Agent type cannot be empty"
-    }
+	if agentType == "" {
+		return false, "", "Agent type cannot be empty"
+	}
 
-    // Validate by looking up the display name directly
-    if name, ok := AIAssistantDisplayNames[agentType]; ok {
-        return true, name, ""
-    }
+	// Validate by looking up the display name directly
+	if name, ok := AIAssistantDisplayNames[agentType]; ok {
+		return true, name, ""
+	}
 
-    return false, "", fmt.Sprintf("Unsupported agent type: %s", agentType)
+	return false, "", fmt.Sprintf("Unsupported agent type: %s", agentType)
 }
 
 // GetAIAssistantDisplayName returns the display name for a given AI assistant type

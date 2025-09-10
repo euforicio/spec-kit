@@ -16,13 +16,13 @@ type ProjectService struct {
 
 // ProjectInitOptions contains options for project initialization
 type ProjectInitOptions struct {
-	Name              string
-	Path              string
-	AIAssistant       string
-	IsHere            bool
-	NoGit             bool
-	IgnoreAgentTools  bool
-	Force             bool
+	Name             string
+	Path             string
+	AIAssistant      string
+	IsHere           bool
+	NoGit            bool
+	IgnoreAgentTools bool
+	Force            bool
 }
 
 // ProjectInitResult contains the result of project initialization
@@ -129,19 +129,19 @@ func (p *ProjectService) validateAITools(env *models.Environment, aiAssistant st
 	case "claude":
 		if !env.IsToolAvailable("claude") {
 			return &models.EnvironmentError{
-				Type: models.ToolNotFound,
-				Tool: "claude",
+				Type:    models.ToolNotFound,
+				Tool:    "claude",
 				Message: "Claude CLI is required for Claude Code projects",
-				Hint: "Install from: https://docs.anthropic.com/en/docs/claude-code/setup",
+				Hint:    "Install from: https://docs.anthropic.com/en/docs/claude-code/setup",
 			}
 		}
 	case "gemini":
 		if !env.IsToolAvailable("gemini") {
 			return &models.EnvironmentError{
-				Type: models.ToolNotFound,
-				Tool: "gemini",
+				Type:    models.ToolNotFound,
+				Tool:    "gemini",
 				Message: "Gemini CLI is required for Gemini projects",
-				Hint: "Install from: https://github.com/google-gemini/gemini-cli",
+				Hint:    "Install from: https://github.com/google-gemini/gemini-cli",
 			}
 		}
 	case "copilot":
@@ -149,12 +149,12 @@ func (p *ProjectService) validateAITools(env *models.Environment, aiAssistant st
 		// No validation needed
 	case "codex":
 		if !env.IsToolAvailable("codex") {
-            return &models.EnvironmentError{
-                Type: models.ToolNotFound,
-                Tool: "codex",
-                Message: "OpenAI Codex CLI is required for Codex projects",
-                Hint:    models.GetInstallHint("codex"),
-            }
+			return &models.EnvironmentError{
+				Type:    models.ToolNotFound,
+				Tool:    "codex",
+				Message: "OpenAI Codex CLI is required for Codex projects",
+				Hint:    models.GetInstallHint("codex"),
+			}
 		}
 	}
 
@@ -314,7 +314,7 @@ func (p *ProjectService) GetNextSteps(result *ProjectInitResult) []string {
 		steps = append(steps,
 			"Use / commands with OpenAI Codex",
 			"Run codex /specify to create specifications",
-			"Run codex /plan to create implementation plans", 
+			"Run codex /plan to create implementation plans",
 			"Run codex /tasks to generate tasks",
 			"See AGENTS.md for all available commands",
 		)

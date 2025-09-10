@@ -24,7 +24,7 @@ func TestAgentValidation_ValidateAgentType(t *testing.T) {
 			expectedError: "",
 		},
 		{
-			name:          "valid gemini agent", 
+			name:          "valid gemini agent",
 			agentType:     "gemini",
 			expectedValid: true,
 			expectedName:  "Gemini CLI",
@@ -32,7 +32,7 @@ func TestAgentValidation_ValidateAgentType(t *testing.T) {
 		},
 		{
 			name:          "valid copilot agent",
-			agentType:     "copilot", 
+			agentType:     "copilot",
 			expectedValid: true,
 			expectedName:  "GitHub Copilot",
 			expectedError: "",
@@ -64,7 +64,7 @@ func TestAgentValidation_ValidateAgentType(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// This test MUST fail initially - ValidateAgentType doesn't exist yet
 			isValid, displayName, errorMsg := models.ValidateAgentType(tt.agentType)
-			
+
 			assert.Equal(t, tt.expectedValid, isValid, "Validation result mismatch")
 			assert.Equal(t, tt.expectedName, displayName, "Display name mismatch")
 			assert.Equal(t, tt.expectedError, errorMsg, "Error message mismatch")
@@ -74,12 +74,12 @@ func TestAgentValidation_ValidateAgentType(t *testing.T) {
 
 // Test that "codex" is in ValidAgents list
 func TestAgentValidation_CodexInValidTypes(t *testing.T) {
-    // This test MUST fail initially - "codex" not yet added to ValidAgents
-    assert.Contains(t, models.ListAgents(), "codex", "codex should be in ValidAgents")
+	// This test MUST fail initially - "codex" not yet added to ValidAgents
+	assert.Contains(t, models.ListAgents(), "codex", "codex should be in ValidAgents")
 }
 
 // Test that "codex" is in ValidAgents list
 func TestAgentValidation_CodexInValidAIAssistants(t *testing.T) {
-    // This test MUST fail initially - "codex" not yet added to ValidAgents
-    assert.Contains(t, models.ListAgents(), "codex", "codex should be in ValidAgents")
+	// This test MUST fail initially - "codex" not yet added to ValidAgents
+	assert.Contains(t, models.ListAgents(), "codex", "codex should be in ValidAgents")
 }

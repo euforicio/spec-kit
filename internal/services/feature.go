@@ -1,26 +1,26 @@
 package services
 
 import (
-    "fmt"
-    "path/filepath"
-    "regexp"
-    "strconv"
-    "strings"
-    "time"
+	"fmt"
+	"path/filepath"
+	"regexp"
+	"strconv"
+	"strings"
+	"time"
 
 	"github.com/euforicio/spec-kit/internal/models"
 )
 
 // Compiled regexes for performance
 var (
-	langRegex         = regexp.MustCompile(`\*\*Language/Version\*\*: (.+)`)
-	depRegex          = regexp.MustCompile(`\*\*Primary Dependencies\*\*: (.+)`)
-	testRegex         = regexp.MustCompile(`\*\*Testing\*\*: (.+)`)
-	storageRegex      = regexp.MustCompile(`\*\*Storage\*\*: (.+)`)
-	projectTypeRegex  = regexp.MustCompile(`\*\*Project Type\*\*: (.+)`)
-	activeTechtRegex  = regexp.MustCompile(`(## Active Technologies\n)(.*?)(\n\n)`)
+	langRegex          = regexp.MustCompile(`\*\*Language/Version\*\*: (.+)`)
+	depRegex           = regexp.MustCompile(`\*\*Primary Dependencies\*\*: (.+)`)
+	testRegex          = regexp.MustCompile(`\*\*Testing\*\*: (.+)`)
+	storageRegex       = regexp.MustCompile(`\*\*Storage\*\*: (.+)`)
+	projectTypeRegex   = regexp.MustCompile(`\*\*Project Type\*\*: (.+)`)
+	activeTechtRegex   = regexp.MustCompile(`(## Active Technologies\n)(.*?)(\n\n)`)
 	recentChangesRegex = regexp.MustCompile(`(## Recent Changes\n)(.*?)(\n\n)`)
-	updateDateRegex   = regexp.MustCompile(`Last updated: \d{4}-\d{2}-\d{2}`)
+	updateDateRegex    = regexp.MustCompile(`Last updated: \d{4}-\d{2}-\d{2}`)
 )
 
 // Language commands map for better maintainability
@@ -60,7 +60,7 @@ func (f *FeatureService) CreateFeature(description string) (*models.FeatureCreat
 	}
 
 	specsDir := filepath.Join(repoRoot, "specs")
-	
+
 	// Create specs directory if it doesn't exist
 	if err := f.filesystem.CreateDirectory(specsDir); err != nil {
 		return nil, fmt.Errorf("failed to create specs directory: %w", err)
@@ -128,7 +128,7 @@ func (f *FeatureService) SetupPlan() (*models.FeaturePlanResult, error) {
 	}
 
 	featureDir := filepath.Join(repoRoot, "specs", currentBranch)
-	
+
 	// Create feature directory if it doesn't exist
 	if err := f.filesystem.CreateDirectory(featureDir); err != nil {
 		return nil, fmt.Errorf("failed to create feature directory: %w", err)
@@ -168,7 +168,7 @@ func (f *FeatureService) CheckPrerequisites() (*models.FeatureCheckResult, error
 	}
 
 	featureDir := filepath.Join(repoRoot, "specs", currentBranch)
-	
+
 	// Check if feature directory exists
 	if exists, _ := f.filesystem.DirectoryExists(featureDir); !exists {
 		return nil, fmt.Errorf("feature directory not found: %s. Run 'specify feature plan' first to create the feature structure", featureDir)
@@ -184,9 +184,9 @@ func (f *FeatureService) CheckPrerequisites() (*models.FeatureCheckResult, error
 	availableDocs := []string{}
 
 	optionalFiles := map[string]string{
-		"research.md":    "research.md",
-		"data-model.md":  "data-model.md", 
-		"quickstart.md":  "quickstart.md",
+		"research.md":   "research.md",
+		"data-model.md": "data-model.md",
+		"quickstart.md": "quickstart.md",
 	}
 
 	for file, desc := range optionalFiles {
@@ -213,13 +213,13 @@ func (f *FeatureService) ValidateAgentType(agentType string) error {
 	if agentType == "" {
 		return nil // Empty is allowed for "all agents"
 	}
-	
-    if models.IsValidAgent(agentType) {
-        return nil
-    }
-	
-    return fmt.Errorf("invalid agent type '%s', must be one of: %s", 
-        agentType, strings.Join(models.ListAgents(), ", "))
+
+	if models.IsValidAgent(agentType) {
+		return nil
+	}
+
+	return fmt.Errorf("invalid agent type '%s', must be one of: %s",
+		agentType, strings.Join(models.ListAgents(), ", "))
 }
 
 func (f *FeatureService) UpdateContext(agentType string) (*models.FeatureContextResult, error) {
@@ -349,7 +349,7 @@ func (f *FeatureService) GetPaths() (*models.FeaturePathsResult, error) {
 
 func (f *FeatureService) getHighestFeatureNumber(specsDir string) (int, error) {
 	highest := 0
-	
+
 	exists, err := f.filesystem.DirectoryExists(specsDir)
 	if err != nil || !exists {
 		return highest, nil
@@ -383,15 +383,15 @@ func (f *FeatureService) createBranchName(description, featureNum string) string
 		}
 		return '-'
 	}, name)
-	
+
 	// Remove multiple consecutive hyphens
 	for strings.Contains(name, "--") {
 		name = strings.ReplaceAll(name, "--", "-")
 	}
-	
+
 	// Trim leading/trailing hyphens
 	name = strings.Trim(name, "-")
-	
+
 	// Extract first 3 meaningful words
 	words := strings.Split(name, "-")
 	meaningfulWords := []string{}
@@ -400,7 +400,7 @@ func (f *FeatureService) createBranchName(description, featureNum string) string
 			meaningfulWords = append(meaningfulWords, word)
 		}
 	}
-	
+
 	return fmt.Sprintf("%s-%s", featureNum, strings.Join(meaningfulWords, "-"))
 }
 
@@ -430,36 +430,36 @@ type TechInfo struct {
 
 func (f *FeatureService) extractTechInfo(content string) TechInfo {
 	info := TechInfo{}
-	
+
 	// Extract technology information from plan content using pre-compiled regexes
 	if match := langRegex.FindStringSubmatch(content); len(match) > 1 {
 		if !strings.Contains(match[1], "NEEDS CLARIFICATION") {
 			info.Language = strings.TrimSpace(match[1])
 		}
 	}
-	
+
 	if match := depRegex.FindStringSubmatch(content); len(match) > 1 {
 		if !strings.Contains(match[1], "NEEDS CLARIFICATION") {
 			info.Framework = strings.TrimSpace(match[1])
 		}
 	}
-	
+
 	if match := testRegex.FindStringSubmatch(content); len(match) > 1 {
 		if !strings.Contains(match[1], "NEEDS CLARIFICATION") {
 			info.Testing = strings.TrimSpace(match[1])
 		}
 	}
-	
+
 	if match := storageRegex.FindStringSubmatch(content); len(match) > 1 {
 		if !strings.Contains(match[1], "N/A") && !strings.Contains(match[1], "NEEDS CLARIFICATION") {
 			info.Database = strings.TrimSpace(match[1])
 		}
 	}
-	
+
 	if match := projectTypeRegex.FindStringSubmatch(content); len(match) > 1 {
 		info.ProjectType = strings.TrimSpace(match[1])
 	}
-	
+
 	return info
 }
 
@@ -481,7 +481,7 @@ func (f *FeatureService) updateAgentFile(filePath, agentType string, techInfo Te
 func (f *FeatureService) createAgentFile(filePath, agentType string, techInfo TechInfo, currentBranch string) error {
 	repoRoot, _ := f.git.GetRepoRoot()
 	templatePath := filepath.Join(repoRoot, "templates", "agent-file-template.md")
-	
+
 	var content string
 	if exists, _ := f.filesystem.FileExists(templatePath); exists {
 		templateContent, err := f.filesystem.ReadFile(templatePath)
@@ -497,32 +497,32 @@ func (f *FeatureService) createAgentFile(filePath, agentType string, techInfo Te
 	// Replace placeholders
 	content = strings.ReplaceAll(content, "[PROJECT NAME]", filepath.Base(repoRoot))
 	content = strings.ReplaceAll(content, "[DATE]", time.Now().Format("2006-01-02"))
-	
+
 	if techInfo.Language != "" && techInfo.Framework != "" {
-		content = strings.ReplaceAll(content, "[EXTRACTED FROM ALL PLAN.MD FILES]", 
+		content = strings.ReplaceAll(content, "[EXTRACTED FROM ALL PLAN.MD FILES]",
 			fmt.Sprintf("- %s + %s (%s)", techInfo.Language, techInfo.Framework, currentBranch))
 	}
-	
+
 	// Add project structure based on type
 	if strings.Contains(techInfo.ProjectType, "web") {
 		content = strings.ReplaceAll(content, "[ACTUAL STRUCTURE FROM PLANS]", "backend/\nfrontend/\ntests/")
 	} else {
 		content = strings.ReplaceAll(content, "[ACTUAL STRUCTURE FROM PLANS]", "src/\ntests/")
 	}
-	
+
 	// Add commands based on language
 	commands := f.getCommandsForLanguage(techInfo.Language)
 	content = strings.ReplaceAll(content, "[ONLY COMMANDS FOR ACTIVE TECHNOLOGIES]", commands)
-	
+
 	// Add code style
 	if techInfo.Language != "" {
-		content = strings.ReplaceAll(content, "[LANGUAGE-SPECIFIC, ONLY FOR LANGUAGES IN USE]", 
+		content = strings.ReplaceAll(content, "[LANGUAGE-SPECIFIC, ONLY FOR LANGUAGES IN USE]",
 			fmt.Sprintf("%s: Follow standard conventions", techInfo.Language))
 	}
-	
+
 	// Add recent changes
 	if techInfo.Language != "" && techInfo.Framework != "" {
-		content = strings.ReplaceAll(content, "[LAST 3 FEATURES AND WHAT THEY ADDED]", 
+		content = strings.ReplaceAll(content, "[LAST 3 FEATURES AND WHAT THEY ADDED]",
 			fmt.Sprintf("- %s: Added %s + %s", currentBranch, techInfo.Language, techInfo.Framework))
 	}
 
@@ -545,7 +545,7 @@ func (f *FeatureService) updateExistingAgentFile(filePath string, techInfo TechI
 	// Simple update - add new technology to active technologies section
 	if techInfo.Language != "" {
 		newTech := fmt.Sprintf("- %s + %s (%s)", techInfo.Language, techInfo.Framework, currentBranch)
-		
+
 		// Look for Active Technologies section
 		if strings.Contains(content, "## Active Technologies") {
 			// Add new tech if not already present
@@ -559,7 +559,7 @@ func (f *FeatureService) updateExistingAgentFile(filePath string, techInfo TechI
 				})
 			}
 		}
-		
+
 		// Update recent changes
 		if strings.Contains(content, "## Recent Changes") {
 			newChange := fmt.Sprintf("- %s: Added %s + %s", currentBranch, techInfo.Language, techInfo.Framework)

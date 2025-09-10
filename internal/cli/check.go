@@ -27,7 +27,7 @@ func runCheck(cmd *cobra.Command, args []string) error {
 	// Show banner
 	showBanner()
 
-    fmt.Println("🔍 Checking Specify requirements...")
+	fmt.Println("🔍 Checking Specify requirements...")
 
 	// Initialize services
 	filesystem := services.NewFilesystemService()
@@ -70,18 +70,18 @@ func showSystemInfo(env *models.Environment) {
 
 func checkInternetConnectivity(github *services.GitHubService) {
 	fmt.Printf("🌐 Internet Connectivity\n")
-	
+
 	err := github.CheckConnectivity()
 	if err != nil {
 		fmt.Printf("   ❌ No internet connection\n")
 		fmt.Printf("      %s\n", err.Error())
 	} else {
 		fmt.Printf("   ✅ Internet connection available\n")
-		
+
 		// Get rate limit info
 		limit, remaining, resetTime, err := github.GetRateLimitInfo()
 		if err == nil {
-			fmt.Printf("      GitHub API: %d/%d requests remaining (resets at %s)\n", 
+			fmt.Printf("      GitHub API: %d/%d requests remaining (resets at %s)\n",
 				remaining, limit, resetTime.Format("15:04:05"))
 		}
 	}
@@ -90,7 +90,7 @@ func checkInternetConnectivity(github *services.GitHubService) {
 
 func checkRequiredTools(env *models.Environment) {
 	fmt.Printf("🔧 Required Tools\n")
-	
+
 	hasAllRequired := true
 	for tool := range models.RequiredTools {
 		status, exists := env.GetToolStatus(tool)
@@ -106,7 +106,7 @@ func checkRequiredTools(env *models.Environment) {
 				fmt.Printf(" (%s)", status.Version)
 			}
 			fmt.Println()
-			
+
 			// Special handling for git
 			if tool == "git" && env.GitConfig.Available {
 				if env.IsGitConfigured() {
@@ -119,7 +119,7 @@ func checkRequiredTools(env *models.Environment) {
 			}
 		}
 	}
-	
+
 	if hasAllRequired {
 		fmt.Printf("   📦 All required tools are available\n")
 	}
@@ -128,7 +128,7 @@ func checkRequiredTools(env *models.Environment) {
 
 func checkOptionalTools(env *models.Environment) {
 	fmt.Printf("🤖 AI Assistant Tools\n")
-	
+
 	availableAI := []string{}
 	for tool := range models.OptionalTools {
 		status, exists := env.GetToolStatus(tool)
@@ -146,12 +146,12 @@ func checkOptionalTools(env *models.Environment) {
 			}
 		}
 	}
-	
+
 	if len(availableAI) == 0 {
 		fmt.Printf("   ⚠️  No AI assistant tools found\n")
 		fmt.Printf("   Consider installing one for the best experience\n")
 	} else {
-		fmt.Printf("   🎉 %d AI assistant(s) available: %s\n", 
+		fmt.Printf("   🎉 %d AI assistant(s) available: %s\n",
 			len(availableAI), strings.Join(availableAI, ", "))
 	}
 	fmt.Println()
@@ -159,7 +159,7 @@ func checkOptionalTools(env *models.Environment) {
 
 func showRecommendations(environment *services.EnvironmentService, env *models.Environment) {
 	recommendations := environment.GetRecommendations(env)
-	
+
 	if len(recommendations) > 0 {
 		fmt.Printf("💡 Recommendations\n")
 		for _, rec := range recommendations {
@@ -171,7 +171,7 @@ func showRecommendations(environment *services.EnvironmentService, env *models.E
 
 func showFinalStatus(env *models.Environment) {
 	status := env.GetReadinessStatus()
-	
+
 	if env.CanInitializeProjects() {
 		fmt.Printf("🎉 Specify CLI is ready to use!\n")
 		if status != "Ready" {

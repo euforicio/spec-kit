@@ -1,14 +1,14 @@
 package services
 
 import (
-    "fmt"
-    "os"
-    "os/exec"
-    "path/filepath"
-    "runtime"
-    "slices"
-    "strings"
-    "time"
+	"fmt"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"runtime"
+	"slices"
+	"strings"
+	"time"
 
 	"github.com/euforicio/spec-kit/internal/models"
 )
@@ -35,7 +35,7 @@ func (e *EnvironmentService) DetectEnvironment() (*models.Environment, error) {
 	env := models.NewEnvironment(workingDir)
 
 	// Detect platform (already set by NewEnvironment using runtime.GOOS)
-	
+
 	// Check internet connectivity
 	env.HasInternet = e.checkInternetConnectivity()
 
@@ -227,7 +227,7 @@ func (e *EnvironmentService) CheckDiskSpace(path string) (free, total uint64, er
 // GetSystemInfo returns system information
 func (e *EnvironmentService) GetSystemInfo() map[string]string {
 	info := make(map[string]string)
-	
+
 	info["os"] = runtime.GOOS
 	info["arch"] = runtime.GOARCH
 	info["go_version"] = runtime.Version()
@@ -288,13 +288,13 @@ func (e *EnvironmentService) GetRecommendations(env *models.Environment) []strin
 
 	// Check internet connectivity
 	if !env.HasInternet {
-		recommendations = append(recommendations, 
+		recommendations = append(recommendations,
 			"Internet connection is required to download templates")
 	}
 
 	// Check git
 	if !env.IsToolAvailable("git") {
-		recommendations = append(recommendations, 
+		recommendations = append(recommendations,
 			"Install git for version control: https://git-scm.com/downloads")
 	} else if !env.IsGitConfigured() {
 		recommendations = append(recommendations,
@@ -302,11 +302,11 @@ func (e *EnvironmentService) GetRecommendations(env *models.Environment) []strin
 	}
 
 	// Check AI tools
-    hasAnyAI := slices.ContainsFunc(models.ListAgents(), func(ai string) bool { return env.IsToolAvailable(ai) })
-    if !hasAnyAI {
-        recommendations = append(recommendations,
-            "Consider installing an AI assistant (Claude Code, Gemini CLI, GitHub Copilot, or OpenAI Codex) for the best experience")
-    }
+	hasAnyAI := slices.ContainsFunc(models.ListAgents(), func(ai string) bool { return env.IsToolAvailable(ai) })
+	if !hasAnyAI {
+		recommendations = append(recommendations,
+			"Consider installing an AI assistant (Claude Code, Gemini CLI, GitHub Copilot, or OpenAI Codex) for the best experience")
+	}
 
 	return recommendations
 }

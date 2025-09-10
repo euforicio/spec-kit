@@ -1,11 +1,11 @@
 package models
 
 import (
-    "fmt"
-    "os"
-    "path/filepath"
-    "regexp"
-    "strings"
+	"fmt"
+	"os"
+	"path/filepath"
+	"regexp"
+	"strings"
 )
 
 // Precompiled regex for <specify>...</specify> sections to avoid recompilation
@@ -27,7 +27,7 @@ func CreateOrUpdateAgentsMD(projectRoot string) (filePath string, created bool, 
 	}
 
 	agentsPath := filepath.Join(projectRoot, "AGENTS.md")
-	
+
 	// Check if file exists
 	if _, statErr := os.Stat(agentsPath); os.IsNotExist(statErr) {
 		// File doesn't exist, create it
@@ -49,67 +49,67 @@ func CreateOrUpdateAgentsMD(projectRoot string) (filePath string, created bool, 
 // CreateAgentsMD creates a new AGENTS.md file with static template content
 func CreateAgentsMD(projectRoot string) (string, error) {
 	agentsPath := filepath.Join(projectRoot, "AGENTS.md")
-	
+
 	// Get static template content
 	content := getAgentsMDTemplate()
-	
+
 	// Write file
 	err := os.WriteFile(agentsPath, []byte(content), 0644)
 	if err != nil {
 		return "", fmt.Errorf("failed to write AGENTS.md: %w", err)
 	}
-	
+
 	return agentsPath, nil
 }
 
 // UpdateAgentsMD updates existing AGENTS.md file with static template content
 func UpdateAgentsMD(projectRoot string) (string, bool, error) {
 	agentsPath := filepath.Join(projectRoot, "AGENTS.md")
-	
+
 	// Read existing content
 	content, err := os.ReadFile(agentsPath)
 	if err != nil {
 		return "", false, fmt.Errorf("failed to read existing AGENTS.md: %w", err)
 	}
-	
+
 	// Update content with new delimited section
 	updatedContent, err := replaceDelimitedSection(string(content))
 	if err != nil {
 		return "", false, fmt.Errorf("malformed delimited section: %w", err)
 	}
-	
+
 	// Write updated content
 	err = os.WriteFile(agentsPath, []byte(updatedContent), 0644)
 	if err != nil {
 		return "", false, fmt.Errorf("failed to write updated AGENTS.md: %w", err)
 	}
-	
+
 	return agentsPath, true, nil
 }
 
 // replaceDelimitedSection replaces or adds the <specify>...</specify> section
 func replaceDelimitedSection(content string) (string, error) {
-    specifySection := getSpecifySectionContent()
-    
-    // Check if delimited section exists
-    
-    // Check for malformed sections
-    openCount := strings.Count(content, "<specify>")
-    closeCount := strings.Count(content, "</specify>")
-	
+	specifySection := getSpecifySectionContent()
+
+	// Check if delimited section exists
+
+	// Check for malformed sections
+	openCount := strings.Count(content, "<specify>")
+	closeCount := strings.Count(content, "</specify>")
+
 	if openCount > 1 || closeCount > 1 {
 		return "", fmt.Errorf("multiple delimited sections found")
 	}
-	
+
 	if openCount != closeCount {
 		return "", fmt.Errorf("mismatched opening and closing tags")
 	}
-	
-    if openCount == 1 {
-        // Replace existing section
-        return specifySectionRe.ReplaceAllString(content, specifySection), nil
-    }
-	
+
+	if openCount == 1 {
+		// Replace existing section
+		return specifySectionRe.ReplaceAllString(content, specifySection), nil
+	}
+
 	// Add new section at the end
 	return content + "\n" + specifySection + "\n", nil
 }
@@ -133,13 +133,13 @@ func getSpecifySectionContent() string {
 		// If template file is not found, return a minimal error section
 		return fmt.Sprintf("<specify>\nError: Could not load template from %s: %v\n</specify>", templatePath, err)
 	}
-	
-    // Extract the <specify>...</specify> section from template content
-    match := specifySectionRe.FindString(string(content))
+
+	// Extract the <specify>...</specify> section from template content
+	match := specifySectionRe.FindString(string(content))
 	if match == "" {
 		// If no delimited section found, return error section
 		return "<specify>\nError: No <specify> section found in template file\n</specify>"
 	}
-	
+
 	return match
 }
