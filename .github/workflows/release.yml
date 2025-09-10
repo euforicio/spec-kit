@@ -113,11 +113,19 @@ jobs:
           mkdir -p /tmp/sdd-copilot-package/.github/prompts
           generate_commands "copilot" "prompt.md" "\$ARGUMENTS" "/tmp/sdd-copilot-package/.github/prompts"
           echo "Created GitHub Copilot package"
+
+          # Create OpenAI Codex package
+          mkdir -p /tmp/sdd-codex-package
+          cp -r /tmp/sdd-package-base/* /tmp/sdd-codex-package/
+          mkdir -p /tmp/sdd-codex-package/.codex/commands
+          generate_commands "codex" "md" "\$ARGUMENTS" "/tmp/sdd-codex-package/.codex/commands"
+          echo "Created OpenAI Codex package"
           
           # Create archive files for each package
           cd /tmp/sdd-claude-package && zip -r /tmp/spec-kit-template-claude.zip . && cd -
           cd /tmp/sdd-gemini-package && zip -r /tmp/spec-kit-template-gemini.zip . && cd -
           cd /tmp/sdd-copilot-package && zip -r /tmp/spec-kit-template-copilot.zip . && cd -
+          cd /tmp/sdd-codex-package && zip -r /tmp/spec-kit-template-codex.zip . && cd -
 
       - name: Upload template packages to release
         run: |
@@ -129,6 +137,7 @@ jobs:
             /tmp/spec-kit-template-claude.zip \
             /tmp/spec-kit-template-gemini.zip \
             /tmp/spec-kit-template-copilot.zip \
+            /tmp/spec-kit-template-codex.zip \
             --clobber
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

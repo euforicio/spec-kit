@@ -129,7 +129,7 @@ The Specify CLI is a fast, single-binary tool written in Go that provides:
 - ✅ **Single Binary** - No dependencies, works everywhere
 - ✅ **Cross-Platform** - Linux, macOS, Windows support
 - ✅ **Fast** - Compiled Go binary with sub-second startup
-- ✅ **AI Assistant Detection** - Automatically detects Claude Code, Gemini CLI
+- ✅ **AI Assistant Detection** - Automatically detects Claude Code, Gemini CLI, and OpenAI Codex
 - ✅ **Environment Validation** - Checks tools, git config, internet connectivity
 - ✅ **Progress Tracking** - Visual progress indicators for all operations
 - ✅ **Error Handling** - Clear, actionable error messages
@@ -143,6 +143,7 @@ The Specify CLI is a fast, single-binary tool written in Go that provides:
 specify init my-project --ai claude
 specify init my-project --ai gemini  
 specify init my-project --ai copilot
+specify init my-project --ai codex
 
 # Initialize in current directory
 specify init --here --ai claude
@@ -203,7 +204,7 @@ Our research and experimentation focus on:
 ## 🔧 Prerequisites
 
 - **Linux/macOS/Windows** 
-- AI coding agent: [Claude Code](https://www.anthropic.com/claude-code), [GitHub Copilot](https://code.visualstudio.com/), or [Gemini CLI](https://github.com/google-gemini/gemini-cli)
+- AI coding agent: [Claude Code](https://www.anthropic.com/claude-code), [GitHub Copilot](https://code.visualstudio.com/), [Gemini CLI](https://github.com/google-gemini/gemini-cli), or [OpenAI Codex](https://github.com/openai/codex)
 - [Git](https://git-scm.com/downloads) (recommended)
 - Internet connection (for template downloads)
 
@@ -245,6 +246,7 @@ You will be prompted to select the AI agent you are using. You can also proactiv
 specify init <project_name> --ai claude
 specify init <project_name> --ai gemini
 specify init <project_name> --ai copilot
+specify init <project_name> --ai codex
 # Or in current directory:
 specify init --here --ai claude
 ```

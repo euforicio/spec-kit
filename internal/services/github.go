@@ -111,26 +111,28 @@ func (g *GitHubService) GetLatestRelease() (*GitHubRelease, error) {
 
 // FindTemplateAsset finds the appropriate template asset for the given AI assistant
 func (g *GitHubService) FindTemplateAsset(release *GitHubRelease, aiAssistant string) (*GitHubAsset, error) {
-	if release == nil {
-		return nil, &models.TemplateError{
-			Type:      models.TemplateNotFound,
-			Assistant: aiAssistant,
-			Message:   "release cannot be nil",
-		}
-	}
+    if release == nil {
+        return nil, &models.TemplateError{
+            Type:      models.TemplateNotFound,
+            Assistant: aiAssistant,
+            Message:   "release cannot be nil",
+        }
+    }
 
-	expectedPattern := fmt.Sprintf("spec-kit-template-%s", aiAssistant)
-	
-	for _, asset := range release.Assets {
-		if strings.Contains(asset.Name, expectedPattern) && strings.HasSuffix(asset.Name, ".zip") {
-			return &asset, nil
-		}
-	}
+    // Try exact match first
+    expectedPattern := fmt.Sprintf("spec-kit-template-%s", aiAssistant)
+    for _, asset := range release.Assets {
+        if strings.Contains(asset.Name, expectedPattern) && strings.HasSuffix(asset.Name, ".zip") {
+            return &asset, nil
+        }
+    }
 
-	// Build available assets list for error message
-	var availableAssets []string
-	for _, asset := range release.Assets {
-		availableAssets = append(availableAssets, asset.Name)
+    // No alias fallback — require a native asset for the requested assistant.
+
+    // Build available assets list for error message
+    var availableAssets []string
+    for _, asset := range release.Assets {
+        availableAssets = append(availableAssets, asset.Name)
 	}
 
 	return nil, &models.TemplateError{
