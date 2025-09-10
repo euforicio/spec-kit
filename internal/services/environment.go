@@ -303,10 +303,10 @@ func (e *EnvironmentService) GetRecommendations(env *models.Environment) []strin
 
 	// Check AI tools
     hasAnyAI := slices.ContainsFunc(models.ListAgents(), func(ai string) bool { return env.IsToolAvailable(ai) })
-	if !hasAnyAI {
-		recommendations = append(recommendations,
-			"Consider installing an AI assistant (Claude Code, Gemini CLI, or GitHub Copilot) for the best experience")
-	}
+    if !hasAnyAI {
+        recommendations = append(recommendations,
+            "Consider installing an AI assistant (Claude Code, Gemini CLI, GitHub Copilot, or OpenAI Codex) for the best experience")
+    }
 
 	return recommendations
 }

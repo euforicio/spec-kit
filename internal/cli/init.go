@@ -45,7 +45,7 @@ var (
 )
 
 func init() {
-	initCmd.Flags().StringVar(&aiAssistant, "ai", "", "AI assistant to use: claude, gemini, or copilot")
+    initCmd.Flags().StringVar(&aiAssistant, "ai", "", "AI assistant to use: claude, gemini, copilot, or codex")
 	initCmd.Flags().BoolVar(&ignoreAgentTools, "ignore-agent-tools", false, "Skip checks for AI agent tools like Claude Code")
 	initCmd.Flags().BoolVar(&noGit, "no-git", false, "Skip git repository initialization")
 	initCmd.Flags().BoolVar(&here, "here", false, "Initialize project in the current directory instead of creating a new one")

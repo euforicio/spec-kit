@@ -72,7 +72,7 @@ var featureContextCmd = &cobra.Command{
 	Short: "Update agent context files based on feature plan",
 	Long: `Update AI agent context files based on the current feature plan.
 
-Supported agents: claude, gemini, copilot
+Supported agents: claude, gemini, copilot, codex
 If no agent is specified, updates all existing agent context files.
 
 This command will:
@@ -262,4 +262,3 @@ func runFeaturePaths(cmd *cobra.Command, args []string) error {
 
 	return nil
 }
-
