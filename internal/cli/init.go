@@ -1,9 +1,9 @@
 package cli
 
 import (
-	"fmt"
-	"path/filepath"
-	"strings"
+    "fmt"
+    "path/filepath"
+    "strings"
 
 	"github.com/spf13/cobra"
 
@@ -133,18 +133,11 @@ func runInit(cmd *cobra.Command, args []string) error {
 			return err
 		}
 	} else {
-		// Validate provided AI assistant
-		valid := false
-		for _, ai := range models.ValidAIAssistants {
-			if options.AIAssistant == ai {
-				valid = true
-				break
-			}
-		}
-		if !valid {
-			return fmt.Errorf("invalid AI assistant '%s', must be one of: %s", 
-				options.AIAssistant, strings.Join(models.ValidAIAssistants, ", "))
-		}
+        // Validate provided AI assistant
+        if !models.IsValidAgent(options.AIAssistant) {
+            return fmt.Errorf("invalid AI assistant '%s', must be one of: %s", 
+                options.AIAssistant, strings.Join(models.ListAgents(), ", "))
+        }
 	}
 
 	// Show project information
@@ -224,9 +217,10 @@ func selectAIAssistant() (string, error) {
 	fmt.Println("1. Claude Code")
 	fmt.Println("2. Gemini CLI") 
 	fmt.Println("3. GitHub Copilot")
+	fmt.Println("4. OpenAI Codex")
 	fmt.Println()
 
-	choice := ui.PromptSelect("Choose (1-3): ", []string{"1", "2", "3"})
+	choice := ui.PromptSelect("Choose (1-4): ", []string{"1", "2", "3", "4"})
 
 	switch choice {
 	case "1":
@@ -235,20 +229,13 @@ func selectAIAssistant() (string, error) {
 		return "gemini", nil
 	case "3":
 		return "copilot", nil
+	case "4":
+		return "codex", nil
 	default:
 		return "", fmt.Errorf("invalid choice: %s", choice)
 	}
 }
 
 func getAIAssistantDisplayName(aiAssistant string) string {
-	switch aiAssistant {
-	case "claude":
-		return "Claude Code"
-	case "gemini":
-		return "Gemini CLI"
-	case "copilot":
-		return "GitHub Copilot"
-	default:
-		return aiAssistant
-	}
+	return models.GetAIAssistantDisplayName(aiAssistant)
 }

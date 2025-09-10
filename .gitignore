@@ -34,5 +34,6 @@ build/
 sdd-*-package/
 spec-kit-template-*.zip
 
-# Claude Code local settings
-.claude/settings.local.json
+# Claude Code and spec-kit development directories
+.claude/
+specs/

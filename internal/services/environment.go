@@ -1,13 +1,14 @@
 package services
 
 import (
-	"fmt"
-	"os"
-	"os/exec"
-	"path/filepath"
-	"runtime"
-	"strings"
-	"time"
+    "fmt"
+    "os"
+    "os/exec"
+    "path/filepath"
+    "runtime"
+    "slices"
+    "strings"
+    "time"
 
 	"github.com/euforicio/spec-kit/internal/models"
 )
@@ -301,13 +302,7 @@ func (e *EnvironmentService) GetRecommendations(env *models.Environment) []strin
 	}
 
 	// Check AI tools
-	hasAnyAI := false
-	for _, ai := range models.ValidAIAssistants {
-		if env.IsToolAvailable(ai) {
-			hasAnyAI = true
-			break
-		}
-	}
+    hasAnyAI := slices.ContainsFunc(models.ListAgents(), func(ai string) bool { return env.IsToolAvailable(ai) })
 	if !hasAnyAI {
 		recommendations = append(recommendations,
 			"Consider installing an AI assistant (Claude Code, Gemini CLI, or GitHub Copilot) for the best experience")

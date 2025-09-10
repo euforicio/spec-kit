@@ -87,7 +87,14 @@ func (p *ProjectService) InitializeProject(options ProjectInitOptions) (*Project
 		result.Warnings = append(result.Warnings, warning)
 	}
 
-	// Step 7: Validate final result
+	// Step 7: Initialize agent-specific setup (Codex AGENTS.md)
+	if project.AIAssistant == "codex" {
+		if _, _, err := models.CreateOrUpdateAgentsMD(project.Path); err != nil {
+			return nil, fmt.Errorf("failed to initialize Codex setup: %w", err)
+		}
+	}
+
+	// Step 8: Validate final result
 	if err := p.validateResult(project); err != nil {
 		return nil, err
 	}
@@ -140,6 +147,15 @@ func (p *ProjectService) validateAITools(env *models.Environment, aiAssistant st
 	case "copilot":
 		// GitHub Copilot doesn't require a CLI tool - it's available in IDEs
 		// No validation needed
+	case "codex":
+		if !env.IsToolAvailable("codex") {
+            return &models.EnvironmentError{
+                Type: models.ToolNotFound,
+                Tool: "codex",
+                Message: "OpenAI Codex CLI is required for Codex projects",
+                Hint:    models.GetInstallHint("codex"),
+            }
+		}
 	}
 
 	return nil
@@ -293,6 +309,14 @@ func (p *ProjectService) GetNextSteps(result *ProjectInitResult) []string {
 	case "copilot":
 		steps = append(steps,
 			"Open in Visual Studio Code and use /specify, /plan, /tasks commands with GitHub Copilot",
+		)
+	case "codex":
+		steps = append(steps,
+			"Use / commands with OpenAI Codex",
+			"Run codex /specify to create specifications",
+			"Run codex /plan to create implementation plans", 
+			"Run codex /tasks to generate tasks",
+			"See AGENTS.md for all available commands",
 		)
 	}
 

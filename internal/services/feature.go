@@ -1,12 +1,12 @@
 package services
 
 import (
-	"fmt"
-	"path/filepath"
-	"regexp"
-	"strconv"
-	"strings"
-	"time"
+    "fmt"
+    "path/filepath"
+    "regexp"
+    "strconv"
+    "strings"
+    "time"
 
 	"github.com/euforicio/spec-kit/internal/models"
 )
@@ -214,14 +214,12 @@ func (f *FeatureService) ValidateAgentType(agentType string) error {
 		return nil // Empty is allowed for "all agents"
 	}
 	
-	for _, validAgent := range models.ValidAgentTypes {
-		if agentType == validAgent {
-			return nil
-		}
-	}
+    if models.IsValidAgent(agentType) {
+        return nil
+    }
 	
-	return fmt.Errorf("invalid agent type '%s', must be one of: %s", 
-		agentType, strings.Join(models.ValidAgentTypes, ", "))
+    return fmt.Errorf("invalid agent type '%s', must be one of: %s", 
+        agentType, strings.Join(models.ListAgents(), ", "))
 }
 
 func (f *FeatureService) UpdateContext(agentType string) (*models.FeatureContextResult, error) {
