@@ -1,10 +1,10 @@
 package models
 
 import (
-	"fmt"
-	"net/url"
-	"strings"
-	"time"
+    "fmt"
+    "net/url"
+    "strings"
+    "time"
 )
 
 // Template represents a downloadable project template from GitHub releases.
@@ -104,19 +104,17 @@ func (t *Template) validateAIAssistant() error {
 		}
 	}
 
-	// Check if AI assistant is valid
-	for _, valid := range ValidAIAssistants {
-		if t.AIAssistant == valid {
-			return nil
-		}
-	}
+    // Check if AI assistant is valid
+    if IsValidAgent(t.AIAssistant) {
+        return nil
+    }
 
 	return &TemplateError{
 		Type:      TemplateNotFound,
 		Assistant: t.AIAssistant,
-		Message:   fmt.Sprintf("invalid AI assistant '%s', must be one of: %s", 
-			t.AIAssistant, strings.Join(ValidAIAssistants, ", ")),
-	}
+        Message:   fmt.Sprintf("invalid AI assistant '%s', must be one of: %s", 
+            t.AIAssistant, strings.Join(ListAgents(), ", ")),
+    }
 }
 
 // validateDownloadURL validates the download URL

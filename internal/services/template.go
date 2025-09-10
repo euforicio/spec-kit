@@ -112,12 +112,12 @@ func (t *TemplateService) extractTemplate(zipPath, targetPath string, isHere boo
 func (t *TemplateService) GetAvailableTemplates() (map[string]*models.Template, error) {
 	templates := make(map[string]*models.Template)
 
-	for _, aiAssistant := range models.ValidAIAssistants {
-		template, err := t.github.GetTemplateForAI(aiAssistant)
-		if err != nil {
-			// Log error but continue with other templates
-			continue
-		}
+    for _, aiAssistant := range models.ListAgents() {
+        template, err := t.github.GetTemplateForAI(aiAssistant)
+        if err != nil {
+            // Log error but continue with other templates
+            continue
+        }
 		templates[aiAssistant] = template
 	}
 

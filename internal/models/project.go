@@ -1,10 +1,11 @@
 package models
 
 import (
-	"fmt"
-	"path/filepath"
-	"strings"
-	"time"
+    "fmt"
+    "path/filepath"
+    "slices"
+    "strings"
+    "time"
 )
 
 // Project represents a spec-driven development project being initialized.
@@ -46,8 +47,7 @@ func (ps ProjectState) String() string {
 	}
 }
 
-// ValidAIAssistants contains the list of supported AI assistants
-var ValidAIAssistants = []string{"claude", "gemini", "copilot"}
+// Supported AI assistants and display names are defined in agents.go
 
 // NewProject creates a new Project instance with validation
 func NewProject(name, path, aiAssistant string, isHere bool) (*Project, error) {
@@ -99,32 +99,29 @@ func (p *Project) validateName() error {
 		}
 	}
 
-	// Check for invalid characters in project name
-	invalidChars := []string{"/", "\\", ":", "*", "?", "\"", "<", ">", "|"}
-	for _, char := range invalidChars {
-		if strings.Contains(p.Name, char) {
-			return &ProjectError{
-				Type:    ProjectNameInvalid,
-				Path:    p.Path,
-				Message: fmt.Sprintf("project name contains invalid character: %s", char),
-			}
-		}
-	}
+    // Check for invalid characters in project name
+    invalidChars := []string{"/", "\\", ":", "*", "?", "\"", "<", ">", "|"}
+    if idx := slices.IndexFunc(invalidChars, func(c string) bool { return strings.Contains(p.Name, c) }); idx != -1 {
+        badChar := invalidChars[idx]
+        return &ProjectError{
+            Type:    ProjectNameInvalid,
+            Path:    p.Path,
+            Message: fmt.Sprintf("project name contains invalid character: %s", badChar),
+        }
+    }
 
 	// Check for reserved names (platform-specific)
 	reservedNames := []string{"con", "prn", "aux", "nul", "com1", "com2", "com3", 
 		"com4", "com5", "com6", "com7", "com8", "com9", "lpt1", "lpt2", "lpt3", 
 		"lpt4", "lpt5", "lpt6", "lpt7", "lpt8", "lpt9"}
 	
-	for _, reserved := range reservedNames {
-		if strings.EqualFold(p.Name, reserved) {
-			return &ProjectError{
-				Type:    ProjectNameInvalid,
-				Path:    p.Path,
-				Message: fmt.Sprintf("project name '%s' is reserved", p.Name),
-			}
-		}
-	}
+    if slices.ContainsFunc(reservedNames, func(r string) bool { return strings.EqualFold(p.Name, r) }) {
+        return &ProjectError{
+            Type:    ProjectNameInvalid,
+            Path:    p.Path,
+            Message: fmt.Sprintf("project name '%s' is reserved", p.Name),
+        }
+    }
 
 	return nil
 }
@@ -161,19 +158,17 @@ func (p *Project) validateAIAssistant() error {
 		}
 	}
 
-	// Check if AI assistant is in the valid list
-	for _, valid := range ValidAIAssistants {
-		if p.AIAssistant == valid {
-			return nil
-		}
-	}
+    // Check if AI assistant is in the valid list
+    if IsValidAgent(p.AIAssistant) {
+        return nil
+    }
 
 	return &ProjectError{
 		Type:    ProjectNameInvalid,
 		Path:    p.Path,
-		Message: fmt.Sprintf("invalid AI assistant '%s', must be one of: %s", 
-			p.AIAssistant, strings.Join(ValidAIAssistants, ", ")),
-	}
+        Message: fmt.Sprintf("invalid AI assistant '%s', must be one of: %s", 
+            p.AIAssistant, strings.Join(ListAgents(), ", ")),
+    }
 }
 
 // GetDisplayName returns the display name for the project
@@ -186,16 +181,7 @@ func (p *Project) GetDisplayName() string {
 
 // GetAIAssistantDisplayName returns the full display name for the AI assistant
 func (p *Project) GetAIAssistantDisplayName() string {
-	switch p.AIAssistant {
-	case "claude":
-		return "Claude Code"
-	case "gemini":
-		return "Gemini CLI"
-	case "copilot":
-		return "GitHub Copilot"
-	default:
-		return p.AIAssistant
-	}
+	return GetAIAssistantDisplayName(p.AIAssistant)
 }
 
 // ShouldInitializeGit returns whether git should be initialized for this project
@@ -203,4 +189,26 @@ func (p *Project) ShouldInitializeGit() bool {
 	// Don't initialize git if already in a git repository
 	// This will be determined by the environment service
 	return !p.HasGit
+}
+
+// ValidateAgentType validates an agent type and returns validation result with display name
+func ValidateAgentType(agentType string) (isValid bool, displayName string, errorMsg string) {
+    if agentType == "" {
+        return false, "", "Agent type cannot be empty"
+    }
+
+    // Validate by looking up the display name directly
+    if name, ok := AIAssistantDisplayNames[agentType]; ok {
+        return true, name, ""
+    }
+
+    return false, "", fmt.Sprintf("Unsupported agent type: %s", agentType)
+}
+
+// GetAIAssistantDisplayName returns the display name for a given AI assistant type
+func GetAIAssistantDisplayName(aiAssistant string) string {
+	if name, ok := AIAssistantDisplayNames[aiAssistant]; ok {
+		return name
+	}
+	return aiAssistant
 }

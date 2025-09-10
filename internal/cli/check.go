@@ -27,7 +27,7 @@ func runCheck(cmd *cobra.Command, args []string) error {
 	// Show banner
 	showBanner()
 
-	fmt.Println("🔍 Checking Specify requirements...\n")
+    fmt.Println("🔍 Checking Specify requirements...")
 
 	// Initialize services
 	filesystem := services.NewFilesystemService()

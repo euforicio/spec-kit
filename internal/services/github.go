@@ -1,12 +1,12 @@
 package services
 
 import (
-	"encoding/json"
-	"fmt"
-	"io"
-	"net/http"
-	"strings"
-	"time"
+    "encoding/json"
+    "fmt"
+    "io"
+    "net/http"
+    "strings"
+    "time"
 
 	"github.com/euforicio/spec-kit/internal/models"
 )
@@ -144,21 +144,14 @@ func (g *GitHubService) FindTemplateAsset(release *GitHubRelease, aiAssistant st
 // GetTemplateForAI fetches the template information for a specific AI assistant
 func (g *GitHubService) GetTemplateForAI(aiAssistant string) (*models.Template, error) {
 	// Validate AI assistant
-	validAI := false
-	for _, valid := range models.ValidAIAssistants {
-		if aiAssistant == valid {
-			validAI = true
-			break
-		}
-	}
-	if !validAI {
-		return nil, &models.TemplateError{
-			Type:      models.TemplateNotFound,
-			Assistant: aiAssistant,
-			Message:   fmt.Sprintf("invalid AI assistant '%s', must be one of: %s", 
-				aiAssistant, strings.Join(models.ValidAIAssistants, ", ")),
-		}
-	}
+    if !models.IsValidAgent(aiAssistant) {
+        return nil, &models.TemplateError{
+            Type:      models.TemplateNotFound,
+            Assistant: aiAssistant,
+            Message:   fmt.Sprintf("invalid AI assistant '%s', must be one of: %s", 
+                aiAssistant, strings.Join(models.ListAgents(), ", ")),
+        }
+    }
 
 	// Get latest release
 	release, err := g.GetLatestRelease()

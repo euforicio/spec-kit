@@ -1,8 +1,9 @@
 package models
 
 import (
-	"fmt"
-	"runtime"
+    "fmt"
+    "slices"
+    "runtime"
 )
 
 // Environment represents the user's local development environment and tool availability.
@@ -41,6 +42,7 @@ var RequiredTools = map[string]string{
 var OptionalTools = map[string]string{
 	"claude": "Install from: https://docs.anthropic.com/en/docs/claude-code/setup",
 	"gemini": "Install from: https://github.com/google-gemini/gemini-cli", 
+	"codex":  "Install from: https://github.com/openai/codex",
 }
 
 // NewEnvironment creates a new Environment instance
@@ -85,12 +87,10 @@ func (e *Environment) validatePlatform() error {
 		}
 	}
 
-	// Check if platform is supported
-	for _, supported := range SupportedPlatforms {
-		if e.Platform == supported {
-			return nil
-		}
-	}
+    // Check if platform is supported
+    if slices.Contains(SupportedPlatforms, e.Platform) {
+        return nil
+    }
 
 	return &EnvironmentError{
 		Type:    ToolNotFound,
@@ -221,22 +221,17 @@ func (e *Environment) GetReadinessStatus() string {
 	return "Ready"
 }
 
-// GetInstallHint returns installation instructions for a specific tool
-func (e *Environment) GetInstallHint(tool string) string {
-	// Check in tool status first
-	if status, exists := e.Tools[tool]; exists {
-		return status.InstallHint
-	}
+// GetInstallHint returns installation instructions for a given tool
+func GetInstallHint(tool string) string {
+    // Check in required tools
+    if hint, exists := RequiredTools[tool]; exists {
+        return hint
+    }
 
-	// Check in required tools
-	if hint, exists := RequiredTools[tool]; exists {
-		return hint
-	}
+    // Check in optional tools  
+    if hint, exists := OptionalTools[tool]; exists {
+        return hint
+    }
 
-	// Check in optional tools
-	if hint, exists := OptionalTools[tool]; exists {
-		return hint
-	}
-
-	return fmt.Sprintf("Installation instructions not available for tool: %s", tool)
+    return fmt.Sprintf("Installation instructions not available for tool: %s", tool)
 }
