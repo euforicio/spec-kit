@@ -32,112 +32,80 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Create template packages
-        run: |
-          # Create base package directory structure in temp
-          mkdir -p /tmp/sdd-package-base
-          
-          # Copy common folders to base
-          if [ -d "memory" ]; then
-            cp -r memory /tmp/sdd-package-base/
-            echo "Copied memory folder"
-          fi
-          
-          if [ -d "templates" ]; then
-            mkdir -p /tmp/sdd-package-base/templates
-            # Copy templates folder but exclude the commands directory
-            find templates -type f -not -path "templates/commands/*" -exec cp --parents {} /tmp/sdd-package-base/ \;
-            echo "Copied templates folder (excluding commands directory)"
-          fi
-          
-          # Generate command files for each agent from source templates
-          generate_commands() {
-            local agent=$1
-            local ext=$2
-            local arg_format=$3
-            local output_dir=$4
-            
-            mkdir -p "$output_dir"
-            
-            for template in templates/commands/*.md; do
-              if [[ -f "$template" ]]; then
-                name=$(basename "$template" .md)
-                description=$(awk '/^description:/ {gsub(/^description: *"?/, ""); gsub(/"$/, ""); print; exit}' "$template" | tr -d '\r')
-                content=$(awk '/^---$/{if(++count==2) start=1; next} start' "$template" | sed "s/{ARGS}/$arg_format/g")
-                
-                case $ext in
-                  "toml")
-                    {
-                      echo "description = \"$description\""
-                      echo ""
-                      echo "prompt = \"\"\""
-                      echo "$content"
-                      echo "\"\"\""
-                    } > "$output_dir/$name.$ext"
-                    ;;
-                  "md")
-                    echo "$content" > "$output_dir/$name.$ext"
-                    ;;
-                  "prompt.md")
-                    {
-                      echo "# $(echo "$description" | sed 's/\. .*//')"
-                      echo ""
-                      echo "$content"
-                    } > "$output_dir/$name.$ext"
-                    ;;
-                esac
-              fi
-            done
-          }
-          
-          # Create Claude Code package
-          mkdir -p /tmp/sdd-claude-package
-          cp -r /tmp/sdd-package-base/* /tmp/sdd-claude-package/
-          mkdir -p /tmp/sdd-claude-package/.claude/commands
-          generate_commands "claude" "md" "\$ARGUMENTS" "/tmp/sdd-claude-package/.claude/commands"
-          echo "Created Claude Code package"
-          
-          # Create Gemini CLI package  
-          mkdir -p /tmp/sdd-gemini-package
-          cp -r /tmp/sdd-package-base/* /tmp/sdd-gemini-package/
-          mkdir -p /tmp/sdd-gemini-package/.gemini/commands
-          generate_commands "gemini" "toml" "{{args}}" "/tmp/sdd-gemini-package/.gemini/commands"
-          if [ -f "agent_templates/gemini/GEMINI.md" ]; then
-            cp agent_templates/gemini/GEMINI.md /tmp/sdd-gemini-package/GEMINI.md
-          fi
-          echo "Created Gemini CLI package"
-          
-          # Create GitHub Copilot package
-          mkdir -p /tmp/sdd-copilot-package
-          cp -r /tmp/sdd-package-base/* /tmp/sdd-copilot-package/
-          mkdir -p /tmp/sdd-copilot-package/.github/prompts
-          generate_commands "copilot" "prompt.md" "\$ARGUMENTS" "/tmp/sdd-copilot-package/.github/prompts"
-          echo "Created GitHub Copilot package"
 
-          # Create OpenAI Codex package
-          mkdir -p /tmp/sdd-codex-package
-          cp -r /tmp/sdd-package-base/* /tmp/sdd-codex-package/
-          mkdir -p /tmp/sdd-codex-package/.codex/commands
-          generate_commands "codex" "md" "\$ARGUMENTS" "/tmp/sdd-codex-package/.codex/commands"
-          echo "Created OpenAI Codex package"
+      - name: Create cache template package
+        run: |
+          # Create cache template package with unified structure
+          mkdir -p /tmp/cache-template-package/{memory,.claude/commands,templates}
           
-          # Create archive files for each package
-          cd /tmp/sdd-claude-package && zip -r /tmp/spec-kit-template-claude.zip . && cd -
-          cd /tmp/sdd-gemini-package && zip -r /tmp/spec-kit-template-gemini.zip . && cd -
-          cd /tmp/sdd-copilot-package && zip -r /tmp/spec-kit-template-copilot.zip . && cd -
-          cd /tmp/sdd-codex-package && zip -r /tmp/spec-kit-template-codex.zip . && cd -
+          # Copy memory files from templates/memory
+          if [ -d "templates/memory" ]; then
+            cp templates/memory/*.md /tmp/cache-template-package/memory/
+            echo "Copied memory files to cache template"
+          fi
+          
+          # Copy command files (from templates/commands) to .claude/commands
+          if [ -d "templates/commands" ]; then
+            cp templates/commands/*.md /tmp/cache-template-package/.claude/commands/
+            echo "Copied command files to cache template (.claude/commands)"
+          fi
+          
+          # Copy template files (excluding commands and memory directories)
+          if [ -d "templates" ]; then
+            find templates -maxdepth 1 -name "*.md" -exec cp {} /tmp/cache-template-package/templates/ \;
+            echo "Copied template files to cache template"
+          fi
+          
+          # Generate manifest.json with file hashes
+          echo "Generating manifest.json..."
+          TAG=$(git describe --tags --abbrev=0)
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          
+          cd /tmp/cache-template-package
+          
+          # Create a temporary file for the templates section
+          TEMP_TEMPLATES=$(mktemp)
+          
+          # Calculate hashes for all files
+          find . -type f -name "*.md" | sort | while read file; do
+            # Remove leading ./
+            RELATIVE_PATH=${file#./}
+            # Calculate SHA256 hash
+            HASH=$(sha256sum "$file" | cut -d' ' -f1)
+            echo "    \"$RELATIVE_PATH\": \"$HASH\"" >> "$TEMP_TEMPLATES"
+          done
+          
+          # Build the complete manifest JSON
+          cat > .manifest.json << EOF
+          {
+            "spec_kit_version": "$TAG",
+            "last_sync": "$TIMESTAMP",
+            "templates": {
+          $(cat "$TEMP_TEMPLATES" | sed '$!s/$/,/')
+            }
+          }
+          EOF
+          
+          # Clean up temp file
+          rm "$TEMP_TEMPLATES"
+          
+          echo "Generated manifest.json with $(find . -name "*.md" | wc -l) files"
+          echo "Manifest contents:"
+          cat .manifest.json
+          cd -
+          
+          # Create the cache template ZIP
+          cd /tmp/cache-template-package && zip -r /tmp/spec-kit-cache-template.zip . && cd -
+          echo "Created cache template package with manifest"
 
       - name: Upload template packages to release
         run: |
           # Get the latest release tag
           TAG=$(git describe --tags --abbrev=0)
           
-          # Upload template packages as additional assets
+          # Upload cache template package as additional asset
           gh release upload $TAG \
-            /tmp/spec-kit-template-claude.zip \
-            /tmp/spec-kit-template-gemini.zip \
-            /tmp/spec-kit-template-copilot.zip \
-            /tmp/spec-kit-template-codex.zip \
+            /tmp/spec-kit-cache-template.zip \
             --clobber
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

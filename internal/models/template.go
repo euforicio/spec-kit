@@ -3,9 +3,13 @@ package models
 import (
 	"fmt"
 	"net/url"
+	"regexp"
 	"strings"
 	"time"
 )
+
+// Pre-compiled regex for hex validation to improve performance
+var hexRegex = regexp.MustCompile(`^[a-fA-F0-9]+$`)
 
 // Template represents a downloadable project template from GitHub releases.
 type Template struct {
@@ -239,6 +243,59 @@ func (t *Template) GetSizeFormatted() string {
 // GetDisplayInfo returns a formatted string with template information
 func (t *Template) GetDisplayInfo() string {
 	return fmt.Sprintf("%s (%s, %s)", t.FileName, t.Version, t.GetSizeFormatted())
+}
+
+// CacheManifest represents the structure of the template cache manifest
+type CacheManifest struct {
+	SpecKitVersion string            `json:"spec_kit_version"`
+	LastSync       time.Time         `json:"last_sync"`
+	Templates      map[string]string `json:"templates"` // filepath -> sha256 hash
+}
+
+// NewCacheManifest creates a new cache manifest with the given version
+func NewCacheManifest(specKitVersion string) *CacheManifest {
+	return &CacheManifest{
+		SpecKitVersion: specKitVersion,
+		LastSync:       time.Now().UTC(),
+		Templates:      make(map[string]string),
+	}
+}
+
+// AddTemplate adds a template file with its hash to the manifest
+func (cm *CacheManifest) AddTemplate(relativePath, hash string) error {
+	if relativePath == "" {
+		return fmt.Errorf("relative path cannot be empty")
+	}
+	if len(hash) != 64 { // SHA256 is 64 hex chars
+		return fmt.Errorf("invalid hash length: expected 64, got %d", len(hash))
+	}
+	if !hexRegex.MatchString(hash) {
+		return fmt.Errorf("invalid hash format: must be hexadecimal")
+	}
+	cm.Templates[relativePath] = hash
+	cm.LastSync = time.Now().UTC()
+	return nil
+}
+
+// GetTemplateHash returns the hash for a given template path
+func (cm *CacheManifest) GetTemplateHash(relativePath string) (string, bool) {
+	hash, exists := cm.Templates[relativePath]
+	return hash, exists
+}
+
+// IsVersionMatch checks if the manifest version matches the given version
+func (cm *CacheManifest) IsVersionMatch(version string) bool {
+	return cm.SpecKitVersion == version
+}
+
+// GetTemplateCount returns the number of templates in the manifest
+func (cm *CacheManifest) GetTemplateCount() int {
+	return len(cm.Templates)
+}
+
+// UpdateLastSync updates the last sync timestamp to current UTC time
+func (cm *CacheManifest) UpdateLastSync() {
+	cm.LastSync = time.Now().UTC()
 }
 
 // Helper function to check if a string starts with a number

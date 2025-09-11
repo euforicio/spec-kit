@@ -44,6 +44,7 @@ func init() {
 	rootCmd.AddCommand(initCmd)
 	rootCmd.AddCommand(checkCmd)
 	rootCmd.AddCommand(featureCmd)
+	rootCmd.AddCommand(templatesCmd)
 }
 
 func showVersion() {
