@@ -1,0 +1,129 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  goreleaser:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          distribution: goreleaser
+          version: "~> v2"
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+
+      - name: Create cache template package
+        run: |
+          # Create cache template package with unified structure
+          mkdir -p /tmp/cache-template-package/{memory,commands,content,templates}
+          
+          echo "Source templates directory contents:"
+          find templates -type f | head -10
+          
+          # Copy memory files from templates/memory
+          if [ -d "templates/memory" ]; then
+            cp templates/memory/* /tmp/cache-template-package/memory/ 2>/dev/null || echo "No files in templates/memory"
+            echo "Copied $(find /tmp/cache-template-package/memory -type f | wc -l) memory files"
+          fi
+          
+          # Copy command files (from templates/commands) to unified commands directory
+          if [ -d "templates/commands" ]; then
+            cp templates/commands/* /tmp/cache-template-package/commands/ 2>/dev/null || echo "No files in templates/commands"
+            echo "Copied $(find /tmp/cache-template-package/commands -type f | wc -l) command files"
+          fi
+          
+          # Copy content files (special templates like AGENTS.md) to unified content directory
+          if [ -d "templates/content" ]; then
+            cp templates/content/* /tmp/cache-template-package/content/ 2>/dev/null || echo "No files in templates/content"
+            echo "Copied $(find /tmp/cache-template-package/content -type f | wc -l) content files"
+          fi
+          
+          # Copy template files from templates/templates subdirectory
+          if [ -d "templates/templates" ]; then
+            cp templates/templates/* /tmp/cache-template-package/templates/ 2>/dev/null || echo "No files in templates/templates"
+            echo "Copied $(find /tmp/cache-template-package/templates -type f | wc -l) template files"
+          fi
+          
+          # Generate manifest.json with file hashes
+          echo "Generating manifest.json..."
+          TAG=$(git describe --tags --abbrev=0)
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          
+          cd /tmp/cache-template-package
+          
+          # Create a temporary file for the templates section
+          TEMP_TEMPLATES=$(mktemp)
+          
+          # Calculate hashes for all files (excluding .manifest.json itself)
+          find . -type f ! -name ".manifest.json" | sort | while read file; do
+            # Remove leading ./
+            RELATIVE_PATH=${file#./}
+            # Calculate SHA256 hash
+            HASH=$(sha256sum "$file" | cut -d' ' -f1)
+            echo "    \"$RELATIVE_PATH\": \"$HASH\"" >> "$TEMP_TEMPLATES"
+          done
+          
+          # Build the complete manifest JSON
+          cat > .manifest.json << EOF
+          {
+            "spec_kit_version": "$TAG",
+            "last_sync": "$TIMESTAMP",
+            "templates": {
+          $(cat "$TEMP_TEMPLATES" | sed '$!s/$/,/')
+            }
+          }
+          EOF
+          
+          # Clean up temp file
+          rm "$TEMP_TEMPLATES"
+          
+          echo "Generated manifest.json with $(find . -type f ! -name ".manifest.json" | wc -l) files"
+          echo ""
+          echo "Template package structure:"
+          find . -type f | sort
+          echo ""
+          echo "Manifest contents:"
+          cat .manifest.json
+          cd -
+          
+          # Create the cache template ZIP
+          echo "Creating ZIP package..."
+          cd /tmp/cache-template-package && zip -r /tmp/spec-kit-cache-template.zip . && cd -
+          
+          echo "Created cache template package:"
+          echo "ZIP file size: $(ls -lh /tmp/spec-kit-cache-template.zip | awk '{print $5}')"
+          echo "ZIP contents:"
+          unzip -l /tmp/spec-kit-cache-template.zip
+
+      - name: Upload template packages to release
+        run: |
+          # Get the latest release tag
+          TAG=$(git describe --tags --abbrev=0)
+          
+          # Upload cache template package as additional asset
+          gh release upload $TAG \
+            /tmp/spec-kit-cache-template.zip \
+            --clobber
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
